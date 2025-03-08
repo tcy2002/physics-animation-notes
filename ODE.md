@@ -10,12 +10,10 @@ $$\frac{d^2x}{dt^2}=\frac{\partial U(x)}{m}$$
 对于二阶常微分方程，一般通过变量替换降阶为一阶常微分方程之后再求解，即：
 
 $$
-\left \{ 
-\begin{array}{l}
+\begin{cases}{l}
 \frac{dx}{dt}=v \\ 
 \frac{dv}{dt}=\frac{\partial U(x)}{m}
-\end{array}
-\right.
+\end{cases}
 $$
 
 
@@ -26,12 +24,10 @@ $$
 对于上面的例子，更新方式为：
 
 $$
-\left \{ 
-\begin{array}{l}
+\begin{cases}{l}
 v_{n+1}=v_n+h\frac{\partial U(x_n)}{m} \\ 
 x_{n+1}=x_n+hv_n
-\end{array}
-\right.
+\end{cases}
 $$
 
 ### 隐式欧拉方法
@@ -44,12 +40,10 @@ $$
 由于隐式欧拉需要迭代，所以有一种更方便的方式：用显式方法更新速度，隐式方法更新位置：
 
 $$
-\left \{ 
-\begin{array}{l}
+\begin{cases}{l}
 v_{n+1}=v_n+h\frac{\partial U(x_n)}{m} \\ 
 x_{n+1}=x_n+hv_{n+1}
-\end{array}
-\right.
+\end{cases}
 $$
 
 这种方法稳定性更好。
@@ -65,15 +59,13 @@ $$
 RK方法和中点法都类似梯形法，即不止采用某一端的斜率去估计变化率。最常用的是RK4，即采用前后端点+两个中点。对于原本的一阶常微分方程，更新方法为：
 
 $$
-\left \{ 
-\begin{array}{l}
+\begin{cases}{l}
 k_1=f(x_n,t_n) \\ 
 k_2=f(x_n+\frac{hk_1}{2},t_n+\frac{h}{2}) \\
 k_3=f(x_n+\frac{hk_2}{2},t_n+\frac{h}{2}) \\
 k_4=f(x_n+hk_3,t_n+h) \\
 x_{n+1}=x_n+\frac{h}{6}(k_1+2k_2+2k_3+k_4)
-\end{array}
-\right.
+\end{cases}
 $$
 
 这里每一个k就是各个点处的斜率。估计后一个点时，用到了前一个点，目的是为了进一步缩小误差。n阶RK方法具有n阶精度。
@@ -81,8 +73,7 @@ $$
 对于上面的例子，更新方法为：
 
 $$
-\left \{ 
-\begin{array}{l}
+\begin{cases}{l}
 k_{v1}=\frac{\partial U(x_n)}{m} \\ 
 k_{x1}=v_n \\
 k_{v2}=\frac{\partial U(x_n+\frac{hk_{x1}}{2})}{m} \\
@@ -93,8 +84,7 @@ k_{v4}=\frac{\partial U(x_n+hk_{x3})}{m} \\
 k_{x4}=v_n+hk_{v3} \\
 v_{n+1}=v_n+\frac{h}{6}(k_{v1}+2k_{v2}+2k_{v3}+k_{v4}) \\
 x_{n+1}=x_n+\frac{h}{6}(k_{x1}+2k_{x2}+2k_{x3}+k_{x4})
-\end{array}
-\right.
+\end{cases}
 $$
 
 同样需要用前一个点来估计后一个点，只不过根据降阶后的方程组，变成了交替更新，$k_{v2}用k_{x1}$更新，$k_{x2}用k_{v1}$更新，以此类推。
