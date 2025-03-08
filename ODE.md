@@ -3,16 +3,16 @@
 
 这里x(t)的写法比较奇怪，不是有一个新的函数，只是表达这里的x是与t相关的未知变量，正是要通过求解这个微分方程来得到，而对于一般的模拟来说，无法获得解析解，所以需要根据迭代来估计。
 
-考虑一个一般场景，空间中存在保守势场$U(x)$（比如重力场），粒子的初始位置为$x_0$，初始速度为$v_0$，质量为m，则其后续的运动满足二阶常微分方程：
+考虑一个一般场景，空间中存在保守势场$U(x)$（比如重力场）和速度阻尼$D(v)$，粒子的初始位置为$x_0$，初始速度为$v_0$，质量为m，则其后续的运动满足二阶常微分方程：
 
-$$\frac{d^2x}{dt^2}=\frac{\partial U(x)}{m}$$
+$$\frac{d^2x}{dt^2}=\frac{\partial U(x)-D(\frac{dx}{dt})}{m}$$
 
 对于二阶常微分方程，一般通过变量替换降阶为一阶常微分方程之后再求解，即：
 
 $$
 \begin{cases}
 \frac{dx}{dt}=v \\ 
-\frac{dv}{dt}=\frac{\partial U(x)}{m}
+\frac{dv}{dt}=\frac{\partial U(x)-D(v)}{m}
 \end{cases}
 $$
 
@@ -25,7 +25,7 @@ $$
 
 $$
 \begin{cases}
-v_{n+1}=v_n+h\frac{\partial U(x_n)}{m} \\ 
+v_{n+1}=v_n+h\frac{\partial U(x_n)-D(v_n)}{m} \\ 
 x_{n+1}=x_n+hv_n
 \end{cases}
 $$
@@ -41,7 +41,7 @@ $$
 
 $$
 \begin{cases}
-v_{n+1}=v_n+h\frac{\partial U(x_n)}{m} \\ 
+v_{n+1}=v_n+h\frac{\partial U(x_n)-D(v_n)}{m} \\ 
 x_{n+1}=x_n+hv_{n+1}
 \end{cases}
 $$
@@ -53,7 +53,7 @@ $$
 
 对于这里降阶后的二阶常微分方程，速度的斜率计算要用到位置，位置的斜率计算要用到速度，所以中点法的更新方式为：
 
-速度的欧拉步长为$\Delta v=h\frac{\partial U(x_n)}{m}$，速度中点为$v_{mid}=v_n+\frac{1}{2}\Delta v$，位置的欧拉步长为$\Delta x=hv_n$，位置中点为$x_{mid}=x_n+\frac{1}{2}\Delta x$，分别用中点去更新下一步的速度和位置：$v_{n+1}=v_n+h\frac{\partial U(x_{mid})}{m}$，$x_{n+1}=x_n+hv_{mid}$
+速度的欧拉步长为$\Delta v=h\frac{\partial U(x_n)-D(v_n)}{m}$，速度中点为$v_{mid}=v_n+\frac{1}{2}\Delta v$，位置的欧拉步长为$\Delta x=hv_n$，位置中点为$x_{mid}=x_n+\frac{1}{2}\Delta x$，分别用中点去更新下一步的速度和位置：$v_{n+1}=v_n+h\frac{\partial U(x_{mid})-D(v_{mid})}{m}$，$x_{n+1}=x_n+hv_{mid}$
 
 ### Runge Kutta方法
 RK方法和中点法都类似梯形法，即不止采用某一端的斜率去估计变化率。最常用的是RK4，即采用前后端点+两个中点。对于原本的一阶常微分方程，更新方法为：
@@ -68,23 +68,23 @@ x_{n+1}=x_n+\frac{h}{6}(k_1+2k_2+2k_3+k_4)
 \end{cases}
 $$
 
-这里每一个k就是各个点处的斜率。估计后一个点时，用到了前一个点，目的是为了进一步缩小误差。n阶RK方法具有n阶精度。
+这里每一个k就是各个点处的斜率。估计后一个点时，用到了前一个点，目的是为了缩小误差。n阶RK方法具有n阶精度。
 
 对于上面的例子，更新方法为：
 
 $$
 \begin{cases}
-k_{v1}=\frac{\partial U(x_n)}{m} \\ 
+k_{v1}=\frac{\partial U(x_n)-D(v_n)}{m} \\ 
 k_{x1}=v_n \\
-k_{v2}=\frac{\partial U(x_n+\frac{hk_{x1}}{2})}{m} \\
+k_{v2}=\frac{\partial U(x_n+\frac{hk_{x1}}{2})-D(v_n+\frac{hk_{v1}}{2})}{m} \\
 k_{x2}=v_n+\frac{hk_{v1}}{2} \\
-k_{v3}=\frac{\partial U(x_n+\frac{hk_{x2}}{2})}{m} \\
+k_{v3}=\frac{\partial U(x_n+\frac{hk_{x2}}{2})-D(v_n+\frac{hk_{v2}}{2})}{m} \\
 k_{x3}=v_n+\frac{hk_{v2}}{2} \\
-k_{v4}=\frac{\partial U(x_n+hk_{x3})}{m} \\
+k_{v4}=\frac{\partial U(x_n+hk_{x3})-D(v_n+hk_{v3})}{m} \\
 k_{x4}=v_n+hk_{v3} \\
 v_{n+1}=v_n+\frac{h}{6}(k_{v1}+2k_{v2}+2k_{v3}+k_{v4}) \\
 x_{n+1}=x_n+\frac{h}{6}(k_{x1}+2k_{x2}+2k_{x3}+k_{x4})
 \end{cases}
 $$
 
-同样需要用前一个点来估计后一个点，只不过根据降阶后的方程组，变成了交替更新，$k_{v2}用k_{x1}$更新，$k_{x2}用k_{v1}$更新，以此类推。
+同样需要用前一个点来估计后一个点，只不过根据降阶后的方程组，变成了交替更新，$k_{v2}$用$k_{x1}$和$k_{v1}$更新，$k_{x2}$用$k_{v1}$更新，以此类推。
