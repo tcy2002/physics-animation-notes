@@ -10,7 +10,7 @@ $$\frac{d^2x}{dt^2}=\frac{\partial U(x)}{m}$$
 对于二阶常微分方程，一般通过变量替换降阶为一阶常微分方程之后再求解，即：
 
 $$
-\begin{cases}{l}
+\begin{cases}
 \frac{dx}{dt}=v \\ 
 \frac{dv}{dt}=\frac{\partial U(x)}{m}
 \end{cases}
@@ -24,7 +24,7 @@ $$
 对于上面的例子，更新方式为：
 
 $$
-\begin{cases}{l}
+\begin{cases}
 v_{n+1}=v_n+h\frac{\partial U(x_n)}{m} \\ 
 x_{n+1}=x_n+hv_n
 \end{cases}
@@ -40,7 +40,7 @@ $$
 由于隐式欧拉需要迭代，所以有一种更方便的方式：用显式方法更新速度，隐式方法更新位置：
 
 $$
-\begin{cases}{l}
+\begin{cases}
 v_{n+1}=v_n+h\frac{\partial U(x_n)}{m} \\ 
 x_{n+1}=x_n+hv_{n+1}
 \end{cases}
@@ -59,7 +59,7 @@ $$
 RK方法和中点法都类似梯形法，即不止采用某一端的斜率去估计变化率。最常用的是RK4，即采用前后端点+两个中点。对于原本的一阶常微分方程，更新方法为：
 
 $$
-\begin{cases}{l}
+\begin{cases}
 k_1=f(x_n,t_n) \\ 
 k_2=f(x_n+\frac{hk_1}{2},t_n+\frac{h}{2}) \\
 k_3=f(x_n+\frac{hk_2}{2},t_n+\frac{h}{2}) \\
@@ -73,7 +73,7 @@ $$
 对于上面的例子，更新方法为：
 
 $$
-\begin{cases}{l}
+\begin{cases}
 k_{v1}=\frac{\partial U(x_n)}{m} \\ 
 k_{x1}=v_n \\
 k_{v2}=\frac{\partial U(x_n+\frac{hk_{x1}}{2})}{m} \\
