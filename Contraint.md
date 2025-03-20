@@ -97,5 +97,4 @@ Eigen库的线性求解器
 - SparseQR：迭代求解，稀疏QR分解，适用于稀疏矩阵
 - BDCSVD：最小二乘求解，分治法奇异值分解，适用于一般矩阵和最小二乘问题
 - JacobiSVD：最小二乘求解，Jacobi奇异值分解，适用于小规模矩阵的最小二乘问题
-
-  一般而言，小型密集矩阵用PartialPivLU或HouseholderQR，对称正定矩阵用LLT或LDLT，大规模稀疏矩阵用ConjugateGradient或BiCGSTAB，最小二乘问题用BDCSVD
+- 一般而言，小型密集矩阵用PartialPivLU或HouseholderQR，对称正定矩阵用LLT或LDLT，大规模稀疏矩阵用ConjugateGradient或BiCGSTAB，最小二乘问题用BDCSVD
