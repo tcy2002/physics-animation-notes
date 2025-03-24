@@ -21,7 +21,7 @@ $$\frac{\partial C}{\partial x}\cdot \hat f==-\frac{\partial C}{\partial x}\cdot
 $$\hat f=\lambda\frac{\partial C}{\partial x}$$
 然后可以得到$\lambda$，进而可以得到约束力$\hat f$，这就是经典的基于力的约束模型。
 
-式(1)同时也是一种反馈机制，即：$\ddot C=-k_sC-k_d\dot C$，可以增加对偏微分方程数值误差的容忍度。
+在式(1)的基础上也可以增加一种反馈机制，即：$\ddot C=-k_sC-k_d\dot C$，第一项$-k_sC$和弹簧约束类似，当约束发生偏离时，添加一个反向的反馈促使约束复原；第二项$-k_d\dot C$则可以使约束偏离的速度的不至于增大。
 
 推广到复杂场景，存在多个约束$C_1,C_2,...,C_m$，雅可比矩阵$J\in R^{m\times 3n}$，逆质量矩阵$W\in R^{3n\times 3n}$，位置矢量$q=[x_1^T,x_2^T,...,x_n^T]^T$，外力矢量$Q=[f_1^T,f_2^T,...,f_n^T]^T$ (若不是粒子，需要考虑刚体的旋转朝向，则多3个旋转自由度，$J\in R^{m\times 6n}$，$W\in R^{6n\times 6n}$，$q=[x_1^T,\alpha_1^T,x_2^T,\alpha_2^T...,x_n^T,\alpha_n^T]$，$Q=[f_1^T,t_1^T,f_2^T,t_2^T...,f_n^T,t_n^T]$，$\dot \alpha=\omega$，$t$为外力矩，$W$相应位置填充惯性张量矩阵的转置)
 
@@ -34,8 +34,7 @@ $$\hat Q=J^T\lambda$$
 $$J=[(\frac{\partial C}{\partial x_1})^T,(\frac{\partial C}{\partial x_2})^T]$$
 
 对于一般的不考虑外力作用的场景而言，有：
-$$JWJ^T\lambda+b=-\dot J\dot q_1\tag 2$$
-其中$b$是一个bias项，作用是防止速度抖动。
+$$JWJ^T\lambda=-\dot J\dot q_1\tag 2-k_sC-k_d\dot C$$
 
 ### 拓展1：Sequential Impulse约束求解框架（面向刚体）
 对于式(2)，正常解矩阵方程的方法不太高效，由此产生了Sequential Impulse方法，逐个求解每个约束$C_1,C_2,...,C_m$，相当于逐个对约束所作用的两个刚体施加冲量。
@@ -48,7 +47,7 @@ $$JWJ^T\lambda+b=-\dot J\dot q_1\tag 2$$
   $$\dot q_{n+1}^{(k+1)}=\dot q_{n+1}^{(k)}+WJ_k^T\lambda_k$$
 - 最后更新位置$q_{n+1}=q_n+\Delta t\dot q_n$
 
-目前实验室刚体引擎采用的是基于力的约束+Sequential Impuslse+Gauss-Seidel迭代
+目前实验室刚体引擎采用的是传统速度约束+Sequential Impuslse+Gauss-Seidel迭代
 
 ### 拓展2：矩阵求解方法
 常见的矩阵线性求解方法有：
@@ -97,4 +96,4 @@ Eigen库的线性求解器
 - SparseQR：迭代求解，稀疏QR分解，适用于稀疏矩阵
 - BDCSVD：最小二乘求解，分治法奇异值分解，适用于一般矩阵和最小二乘问题
 - JacobiSVD：最小二乘求解，Jacobi奇异值分解，适用于小规模矩阵的最小二乘问题
-- 一般而言，小型密集矩阵用PartialPivLU或HouseholderQR，对称正定矩阵用LLT或LDLT，大规模稀疏矩阵用ConjugateGradient或BiCGSTAB，最小二乘问题用BDCSVD
+- 一般而言，小型密集矩阵用PartialPivLU或HouseholderQR，对称正定矩阵用LLT或LDLT，大规模稀疏矩阵用ConjugateGradient或BiCGSTAB，最小二乘问题用BDCSVD或JacobiSVD
