@@ -47,7 +47,7 @@ $$JWJ^T\lambda=-\dot J\dot q_1\tag 2-k_sC-k_d\dot C$$
   $$\dot q_{n+1}^{(k+1)}=\dot q_{n+1}^{(k)}+WJ_k^T\lambda_k$$
 - 最后更新位置$q_{n+1}=q_n+\Delta t\dot q_n$
 
-目前实验室刚体引擎采用的是传统速度约束+Sequential Impuslse+Gauss-Seidel迭代
+目前实验室刚体引擎采用的是传统约束模型+Sequential Impuslse+Gauss-Seidel迭代
 
 ### 拓展2：矩阵求解方法
 常见的矩阵线性求解方法有：
