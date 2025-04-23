@@ -87,9 +87,9 @@ $$Q=M\dot u$$
 这里的$M\in R^{6\times 6}$，$v\in R^{6\times 1}$：
 $$M=\left[
   \begin{matrix}
-  \frac{1}{m} & 0 & 0 & 0 & 0 & 0\\
-  0 & \frac{1}{m} & 0 & 0 & 0 & 0\\
-  0 & 0 & \frac{1}{m} &  & 0 & 0\\
+  m & 0 & 0 & 0 & 0 & 0\\
+  0 & m & 0 & 0 & 0 & 0\\
+  0 & 0 & m &  & 0 & 0\\
   0 & 0 & 0 & I_{xx} & I_{xy} & I_{xz}\\
   0 & 0 & 0 & I_{xy} & I_{yy} & I_{yz}\\
   0 & 0 & 0 & I_{xz} & I_{yz} & I_{zz}
@@ -117,6 +117,8 @@ $$M=\left[
 - Rigid-IPC
 - ABD
 - Primal-Dual
+
+### PBD刚体
 
 ## 主流刚体引擎架构（碰撞解算和响应是核心）
 ### 宽域碰撞
