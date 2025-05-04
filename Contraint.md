@@ -7,7 +7,7 @@ $$\dot C(x)=x\cdot \dot x=0$$
 $$\ddot C(x)=x\cdot \ddot x+\dot x \cdot \dot x=0$$
 要使小球满足约束，且不往破坏约束条件的情况下演化，需要通过一定方式使得上述三个方程全部成立。
 
-### 基于力的约束模型
+### 传统约束模型（基于力的约束）
 对于一般约束$C$，$\frac{\partial C}{\partial x}$表示约束$C$的梯度，那么：
 
 $$\dot C(x)=\frac{\partial C}{\partial x}\cdot \dot x=0\$$
@@ -36,8 +36,8 @@ $$J=[(\frac{\partial C}{\partial x_1})^T,(\frac{\partial C}{\partial x_2})^T]$$
 对于一般的不考虑外力作用的场景而言，有：
 $$JWJ^T\lambda=-\dot J\dot q_1\tag 2-k_sC-k_d\dot C$$
 
-### 拓展1：Sequential Impulse约束求解框架（面向刚体）
-对于式(2)，正常解矩阵方程的方法不太高效，由此产生了Sequential Impulse方法，逐个求解每个约束$C_1,C_2,...,C_m$，相当于逐个对约束所作用的两个刚体施加冲量。
+### Sequential Impulse约束求解框架（面向刚体）
+对于式(2)，正常解矩阵方程的方法不太高效，由此产生了Sequential Impulse方法，逐个求解每个约束$C_1,C_2,...,C_m$，相当于逐个对约束所作用的两个刚体施加冲量，类似Gauss-Seidel-type迭代。由于刚体的碰撞和摩擦约束是非线性的，存在LCP（线性互补问题），所以有一些特殊处理。
 
 求解过程：
 - 计算没有约束情况下的下一帧速度$\dot q_{n+1}^*$：
@@ -47,9 +47,7 @@ $$JWJ^T\lambda=-\dot J\dot q_1\tag 2-k_sC-k_d\dot C$$
   $$\dot q_{n+1}^{(k+1)}=\dot q_{n+1}^{(k)}+WJ_k^T\lambda_k$$
 - 最后更新位置$q_{n+1}=q_n+\Delta t\dot q_n$
 
-目前实验室刚体引擎采用的是传统约束模型+Sequential Impuslse+Gauss-Seidel迭代
-
-### 拓展2：矩阵求解方法
+### 矩阵求解方法
 常见的矩阵线性求解方法有：
 - 高斯消元法：通过行变换将矩阵化为上三角矩阵，然后回代求解；
 - LU分解：将矩阵分解为下三角矩阵$L$和上三角矩阵$U$，然后通过前向后向替换求解；
@@ -77,10 +75,11 @@ $$JWJ^T\lambda=-\dot J\dot q_1\tag 2-k_sC-k_d\dot C$$
   x_1^{(k+1)}=(20+3x_2^{(k)}-2x_3^{(k)})/8 \\
   x_2^{(k+1)}=(33-4x_1^{(k+1)}+x_3^{(k)})/11 \\
   x_3^{(k+1)}=(36-6x_1^{(k+1)}-3x_2^{(k+1)})/12
-  \end{cases}$$
+  \end{cases} \tag 3$$
   即，迭代方程修改为：
   $$x^{(k+1)}=(D-L)^{-1}Ux^{(k)}+(D-L)^{-1}b$$
   高斯-赛德尔迭代收敛更快，当系数矩阵$A$严格对角占优或对称正定时，迭代必定收敛。
+- Gauss-Seidel-type迭代：观察方程组(3)，每次$x_n^{(k+1)}$是独立更新的，并且后面会用到当前求出的新值，这便是Gauss-Seidel-type迭代的基本特征：独立更新每个约束。在PBD的论文中，采用这种Gauss-Seidel-type来处理位置约束，并且将约束变化投影到梯度方向上（比如两点距离约束的梯度方向指向对面的点），称为Projected Gauss Seidel
 
 Eigen库的线性求解器
 - PartialPivLU：直接求解，部分选主元，适用于一般矩阵（选主元：指选择列中绝对值最大的元素作为主元，并交换行到对角线上）

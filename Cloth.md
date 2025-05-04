@@ -1,14 +1,20 @@
 # 布料仿真
-## 弹簧质点法
+## 弹簧质点法：弹簧约束
 ### 基本结构
+![cloth_spring](./blobs/cloth_spring.png)
+
 - structure：相邻质点，组成基本结构
 - bending：隔一个质点，防止弯曲
 - shearing：交叉质点，防止剪切
 
-### 显式欧拉/隐式欧拉
-显式欧拉：根据弹簧力计算加速度，用旧值更新速度和位置
+每一帧计算相邻质点间的弹簧力，然后计算速度和位置的变化
 
-隐式欧拉：
+### 显式欧拉
+根据弹簧力计算加速度，用旧值更新速度和位置
+
+### 隐式欧拉
+用新值更新速度和位置
+
 $$x_{t+1}=x_t+hf(x_{t+1})$$
 直接求解不太方便，可以进行一定形式的替换：
 $$x_{t+1}-x_t=hf(x_{t+1})$$
@@ -16,7 +22,7 @@ $$\downarrow$$
 $$\Delta x=hf(x_t+\Delta x)$$
 用一阶泰勒来估计$f(x_t+\Delta x)$：
 $$
-\Delta x=h(f(x_t)+f'(x_t)\Delta x)
+\Delta x=h(f(x_t)+f'(x_t)\Delta x+O(\Delta x^2))
 $$
 这里引入的二阶误差，相比显式欧拉造成的不稳定性，可以接受。
 
@@ -34,9 +40,15 @@ $$
 $$
 接下来，除$\Delta v_a$和$\Delta v_b$外都是已知量，化简得到：
 $$
-(m-\Delta t\frac{\partial f}{\partial v_a}-{\Delta t}^2\frac{\partial f}{\partial x_a})\Delta v_a-(\Delta t\frac{\partial f}{\partial v_b}+{\Delta t}^2\frac{\partial f}{\partial x_b})\Delta v_b=\Delta t(f_n+\Delta t(\frac{\partial f}{\partial x_a}v_a+\frac{\partial f}{\partial x_b}v_b))
+(m-\Delta t\frac{\partial f}{\partial v_a}-{\Delta t}^2\frac{\partial f}{\partial x_a})\Delta v_a-(\Delta t\frac{\partial f}{\partial v_b}+{\Delta t}^2\frac{\partial f}{\partial x_b})\Delta v_b \\
+=\Delta t(f_n+\Delta t(\frac{\partial f}{\partial x_a}v_a+\frac{\partial f}{\partial x_b}v_b)) \tag 1
 $$
-整理线性求解过程：需要求的是各个质点的速度变化量$x=[\Delta v_1,\Delta v_2,...,\Delta v_n]^T$，等式左侧$\Delta v_a$和$\Delta v_b$的系数整理到系数矩阵$A$中的相应位置，等式右侧整理到$b$中的相应位置，系数矩阵A类似雅可比矩阵。
+整理矩阵方程：
+$$Ax=b$$
+
+对于质点a，式(1)是只考虑一个相邻质点$b$的偏微分方程，实际上应有4个structure、4个bending、4个shearing质点。
+
+需要求的是各个质点的速度变化量$x=[\Delta v_1,\Delta v_2,...,\Delta v_n]^T$，等式左侧$\Delta v_a$的系数整理到矩阵$A$的$(a,a)$处，$\Delta v_b$的系数整理到矩阵$A$的$(a,b)$处，等式右侧整理到$b$中的$(a)$处。另外11个相邻质点$b_n$的等式左侧系数分别整理到$(a,a)$和$(a,b_n)$处，注意矩阵$A$对角线$(a,a)$处和$b$在$(a)$处的值需要累加，矩阵$A$非对角线处的值不需要累加。
 
 最后使用隐式欧拉方法更新：
 $$
@@ -62,13 +74,19 @@ $$
 \frac{\partial f_{da}}{\partial v_a}=-k_d\hat p_{ab}\hat p_{ab}^T=-\frac{\partial f_{da}}{\partial v_b}
 $$
 
+### 地面碰撞和摩擦
 与地面（$y=0$）的碰撞：根据配置的恢复系数，当布料质点位于$y=0$平面下方时，将$y$方向上的速度反向并乘以恢复系数$r$，这种简单的方式即可模拟比较理想的碰撞和反弹效果。为保持稳定的接触条件，需要将地面下方的质点位置设为$y=-\epsilon$，$\epsilon$是一个误差允许值比如$1e-6$
 
-与地面的摩擦：当布料质点和地面的碰撞发生时，根据速度变化求出质点受到的冲量，进而求出质点所受的正压力，乘以$\mu$即为所受的摩擦力。在隐式欧拉方法中，摩擦力关于速度的偏导为：
+与地面的摩擦：当布料质点和地面的碰撞发生时，根据速度变化求出质点受到的冲量，进而求出质点所受的正压力，乘以$\mu$即为所受的摩擦力，摩擦力的大小为：
+$$||f_{friction}||=\mu((1+r)\frac{m|v_{ay}|}{\Delta t}+mg)$$
+方向为：
+$$\hat f_{friction}=\frac{[v_{ax},0,v_{az}]^T}{\sqrt{v_{ax}^2+v_{az}^2}}$$
+
+在隐式欧拉方法中，摩擦力关于速度的偏导为：
 $$\frac{\partial f_{friction}}{\partial v_a}=\frac{\partial ||f_{friction}||}{\partial v_a}\hat f_{friction}^T+||f_{friction}||\frac{\partial \hat f_{friction}}{\partial v_a}$$
 其中
 $$
-\frac{\partial ||f_{friction}||}{\partial v_a}=[0,\mu(1+r)\frac{m}{\Delta t},0]^T \\
+\frac{\partial ||f_{friction}||}{\partial v_a}=[0,-\mu(1+r)\frac{m}{\Delta t},0]^T \\
 \frac{\partial \hat f_{friction}}{\partial v_a}=
 \left[
 \begin{matrix}
@@ -78,5 +96,69 @@ $$
 \end{matrix}
 \right]
 $$
+对于其他的静态碰撞和摩擦，可以使用类似的方式来推导。
 
-### PBD
+## PBD
+
+### 算法流程
+
+![pbd](./blobs/pseudo_pbd.png)
+
+$C_{M+M_{coll}}$：$M$个固定约束（比如布料质点之间的相互约束）、$M_{coll}$个碰撞约束（比如布料质点和外部模型的碰撞）
+
+先根据外力更新速度和位置（预测的速度和位置），然后对位置进行约束，用约束后的位置更新速度。
+
+这种方式是无条件稳定的，唯一影响稳定性的因素是对位置进行约束时的求解方式。
+
+### 位置约束投影
+
+很多约束都是非线性的，文章借助Gauss-Seidel的思想：逐个独立地求解每个约束，多次迭代得到最终结果。
+
+Gauss-Seidel迭代本身用来求解线性方程组（矩阵方程）：
+$$\begin{cases}
+8x_1-3x_2+2x_3=20 \\
+4x_1+11x_2-x_3=33 \\
+6x_1+3x_2+13x_3=36
+\end{cases}\Rightarrow
+\begin{cases}
+x_1=(20+3x_2-2x_3)/8 \\
+x_2=(33-4x_1+x_3)/11 \\
+x_3=(36-6x_1-3x_2)/12
+\end{cases}$$
+Gauss-Seidel迭代：
+
+$$\begin{cases}
+x_1^{(k+1)}=(20+3x_2^{(k)}-2x_3^{(k)})/8 \\
+x_2^{(k+1)}=(33-4x_1^{(k+1)}+x_3^{(k)})/11 \\
+x_3^{(k+1)}=(36-6x_1^{(k+1)}-3x_2^{(k+1)})/12
+\end{cases}$$
+
+对于质点布料：
+
+![projection](./blobs/cloth_projection.png)
+
+$$\Delta p_1=-\frac{w_1}{w_1+w_2}(|p_1-p_2|-d)\frac{p_1-p_2}{|p1-p_2|}$$
+$$\Delta p_2=\frac{w_1}{w_1+w_2}(|p_1-p_2|-d)\frac{p_1-p_2}{|p1-p_2|}$$
+
+每一帧中按照固定顺序，逐个求解每个约束，向梯度方向上更新位置，多次迭代后得到收敛结果。
+
+### 碰撞和摩擦
+  
+支持连续性碰撞检测，对于每个质点的上一帧位置$x_i$和用外力预测出的位置$p_i$，打一条射线$x_i\rightarrow p_i$，如果击中了另一个物体表面，计算击中点$q_c$和法矢量$n_c$，增加约束$C(p)=(p-q_c)\cdot n_c\ge 0$；若射线$x_i\rightarrow p_i$完全在另一个物体内部，直接用静态碰撞检测方式：找最近的表面点$q_s$和法矢量$n_s$，也增加约束$C(p)=(p-q_s)\cdot n_s$
+
+摩擦和恢复系数：在算法第16行直接进行处理，比如减速和反向
+
+两个动态物体的碰撞：放在一套求解器中求解，只不过两个物体的质点之间没有相互约束，但可能会有碰撞约束。
+
+### 布料自碰撞
+  
+论文使用空间哈希来查找三角面片，对于穿过三角面片$p_1,p_2,p_3$的质点$q$，增加以下约束：
+$$C(q,p_1,p_2,p_3)=(q-p_1)\\frac{(p_2-p_1)\times(p_3-p_1)}{|(p_2-p_1)\times(p_3-p_1)|}-h$$
+其中$h$是布料厚度，如果是从反面穿过的，就需要加个负号。
+
+### 封闭气球
+
+论文还提到了封闭气球里的压强约束表示：
+$$C(p_1,...p_N)=(\sum_{i=1}^{n_{triangles}}(p_{t_1^i}\times p_{t_2^i})\cdot p_{t_3^i})-k_{pressure}V_0$$
+梯度：
+$$\Delta_{p_i}C=\sum_{j:t_1^j}(p_{t_2^j}\times p_{t_3^j})+\sum_{j:t_2^j}(p_{t_3^j}\times p_{t_1^j})+\sum_{j:t_3^j}(p_{t_1^j}\times p_{t_2^j})$$
