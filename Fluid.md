@@ -1,10 +1,10 @@
 # 流体仿真
-Robert Bridson Fluid Simulation for Computer Graphics学习笔记
+参考：Robert Bridson Fluid Simulation for Computer Graphics
 
 ## Navier-Stokes方程
 流体粒子同样满足牛顿第二定律：
 $$m\frac{Du}{Dt}=F$$
-这里的微分算子用大写$D$表示，有一些特殊含义（material derivative）。
+这里的微分算子用大写$D$表示，表示物质导数（material derivative），描述属性随流体场的变化规律。
 
 考虑流体粒子所受的力，除了重力$mg$外，还有附近粒子的相互作用。相互作用包括：由于压强差导致的推力、由于黏滞力导致的摩擦力（不太正确但直观的描述）。
 
@@ -24,7 +24,7 @@ $$\frac{Du}{Dt}=g-\frac{1}{\rho}\nabla p+\frac{\eta}{\rho}\nabla^2u$$
 后面的推导全部基于欧拉视角。
 
 ## advection
-可以这样直观理解：虽然欧拉视角中的网格是固定的，但流体在流动，先不考虑外力和压缩，对于某一个网格点$x_i$而言，$t+\Delta t$时刻该处的流体组成已经发生了改变，其实是$t$时刻位于$x_i-\bar u\Delta t$处的流体流到了这里。因此，$t+\Delta t$时刻位于$x_i$处的物理属性应与$t$时刻$x_i-\bar u\Delta t$处的物理属性对应。这里的物理属性也包括速度本身，advection反映的是物理属性随速度场的流动情况。这种用$x_i-\bar u\Delta t$处的物理属性来修正$x_i$处物理属性的方法被成为semi-lagranrian（具有某种粒子特征）
+可以这样直观理解：虽然欧拉视角中的网格是固定的，但流体在流动，先不考虑外力和压缩，对于某一个网格点$x_i$而言，$t+\Delta t$时刻该处的流体组成已经发生了改变，其实是$t$时刻位于$x_i-\bar u\Delta t$处的流体流到了这里。因此，$t+\Delta t$时刻位于$x_i$处的物理属性应与$t$时刻$x_i-\bar u\Delta t$处的物理属性对应。这里的物理属性也包括速度本身，advection反映的是物理属性随速度场的流动情况。这种用$x_i-\bar u\Delta t$处的物理属性来修正$x_i$处物理属性的方法被成为semi-lagranrian（具有某种粒子特征）。这种方法可以推导出$\frac{\partial u}{\partial t}$到$\frac{Du}{Dt}$的转换，也是物质导数这一概念的来源。
 
 ## 不可压缩性：incompressibility
 流体的不可压缩性表现在：与气体相比，流体发生体积改变的程度很小，在模拟中可以忽略不计。这个属性可以用散度算子表示，即对于任意一点来说，该处物理量聚集或发散的程度为0：
@@ -47,7 +47,7 @@ $$\tilde q=q^{(n)}+\Delta tf(q^{(n)}) \\ q^{(n+1)}=\tilde q+\Delta t g(\tilde q)
 
 按照上面的分步方法来更新$u$：观察方程组(1)，可以拆解为3个部分：
 $$\frac{\partial u}{\partial t}=f_1+f_2+f_3$$
-- $f_1$：advection：$u_A=\text{advect}(u^{(n)},\Delta t,u^{(n)})$，$\text{advect}(u,\Delta t,\cdot)$表示前面提到的advection约束；（可以理解为$\frac{Du}{Dt}$到$\frac{\partial u}{\partial t}$的转换）
+- $f_1$：advection：$u_A=\text{advect}(u^{(n)},\Delta t,u^{(n)})$，$\text{advect}(u,\Delta t,\cdot)$表示前面提到的advection约束；
 - $f_2$：外力（以重力为例）：$u_B=u_A+\Delta tg$；
 - $f_3$：压强/不可压缩性：$u^{(n+1)}=u_B-\frac{\Delta t}{\rho}\nabla p$，$\nabla p$是满足不可压缩约束（$\nabla \cdot u=0$）条件的压强梯度。
 
@@ -89,7 +89,7 @@ $$\begin{aligned}
 \end{aligned}$$
 MAC网格将速度放在交界边上的方法恰巧可以使得压强的梯度可以获得二阶精度。化简得到：
 $$4p^{(n+1)}_{i,j}-p^{(n+1)}_{i+1,j}-p^{(n+1)}_{i,j+1}-p^{(n+1)}_{i-1,j}-p^{(n+1)}_{i,j-1}=-\frac{\rho \Delta x}{\Delta t}(u^{(n)}_{i+\frac{1}{2},j}-u^{(n)}_{i-\frac{1}{2},j}+u^{(n)}_{i,j+\frac{1}{2}}-u^{(n)}_{i,j-\frac{1}{2}})$$
-与布料隐式欧拉中使用稀疏矩阵直接求解$Ax=b$不同，这里采用Gauss-Seidel迭代来求解（即用迭代来逼近线性方程组的解，参考布料PBD中的推导），迭代公式为：
+与布料隐式欧拉中使用稀疏矩阵直接求解$Ax=b$不同，这里采用Gauss-Seidel迭代来求解（参考[MathUtils.md](./MathUtils.md)），迭代公式为：
 $$\begin{aligned}
 p_{i,j}&=\frac{1}{4}(p_{i+1,j}+p_{i,j+1}+p_{i-1,j}+p_{i,j-1}-\frac{\rho \Delta x}{\Delta t}(u_{i+\frac{1}{2},j}-u_{i-\frac{1}{2},j}+u_{i,j+\frac{1}{2}}-u_{i,j-\frac{1}{2}})) \\
 &=\frac{1}{4}(p_{i+1,j}+p_{i,j+1}+p_{i-1,j}+p_{i,j-1}-\frac{\rho \Delta x^2}{\Delta t}(\nabla \cdot u))
