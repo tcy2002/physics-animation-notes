@@ -130,7 +130,7 @@ M & 0\\
 
 从一个简单的例子来看：给定两个刚体，蓝色为刚体A，红色为刚体B，某一时刻发生重叠：
 
-![2rigids](https://notes.sjtu.edu.cn/uploads/upload_2844a7bfff5fe014418d252d380e9c74.png)
+![2rigids](./blobs/2rigids.png)
 
 刚体物理引擎大体上按照两个模块进行仿真求解：Collision Detection和Simulation.
 
@@ -146,7 +146,7 @@ M & 0\\
 
 下图中有4个刚体，共4x6=24个位置自由度，即有24个未知量需要求解，由于碰撞约束的亏秩性，把位置作为未知量来看是没有唯一精确解的，但可以求向着满足约束方向演化的未知量变化量，也就是速度。对速度进行约束，是通过向刚体施加冲量来实现的，然后通过误差修正项从约束被破坏的状态中恢复。
 
-![4rigids](https://notes.sjtu.edu.cn/uploads/upload_e1aad504761629047baddc0fa214bb49.png)
+![4rigids](./blobs/4rigids.png)
 
 碰撞约束的非平滑因素主要体现在LCP问题（Linear Complementary Problem）和库伦摩擦上。LCP描述的是刚体的某些运动特征和约束有互补关系，比如当刚体之间有接触时，法向排斥不为0，没有接触时，法向排斥为0，这种关系用数学形式表示为：$z\ge 0; w\ge 0; z^Tw=0$；库伦摩擦则是几乎所有物理引擎会用到的描述摩擦约束的模型，要满足$|f_t|\le \mu f_n$，摩擦数值的变化在切向上呈现“Z”字形。
 
@@ -154,7 +154,7 @@ M & 0\\
 
 回到前面那张两个刚体简单接触的图，接下来用直观的形式详细推导一下碰撞约束求解的过程：
 
-![2rigids](https://notes.sjtu.edu.cn/uploads/upload_2844a7bfff5fe014418d252d380e9c74.png)
+![2rigids](./blobs/2rigids.png)
 
 **1. 约束公式推导**
 
@@ -240,7 +240,7 @@ PhysX等引擎采用的是半隐式欧拉，根据上面求出的$\Delta u$更�
 
 各类约束效果（从左到右依次为球铰约束、滑轨约束、合页约束）：
 
-![constraints_gif](https://notes.sjtu.edu.cn/uploads/upload_367aaaf555399954ed8064a71a60ef7f.gif)
+![constraints_gif](./blobs/constraints.gif)
 
 ### 摩擦约束
 
@@ -248,7 +248,7 @@ PhysX等引擎采用的是半隐式欧拉，根据上面求出的$\Delta u$更�
 
 ### 球铰约束（Ball-in-Socket Joint / Point-to-Point Joint）
 
-![ball-in-socket](https://notes.sjtu.edu.cn/uploads/upload_aeafb1c2dfded7e088dc950c5620c38d.png)
+![ball-in-socket](./blobs/ball-in-socket.png)
 
 球铰约束的条件为：两个刚体上各有一个相对于自身的锚点（Anchor），相对于各自质心$P_a$和$P_b$的位置分别为$r_a$和$r_b$，这两个锚点在模拟中保持位置重合。同样考虑速度约束，约束形式为：$v_b+\omega_b\times r_b-v_a-\omega_a\times r_a=0$（即去掉了碰撞约束中与法向有关的部分），仍然令$J_{ab}=\left[\begin{matrix}
 -I_3 \\
@@ -270,7 +270,7 @@ v_b \\
 
 ### 合页约束（Hinge Joint）
 
-![dist](https://notes.sjtu.edu.cn/uploads/upload_eb1045a8a385a61d5a3dc93fb53984a9.jpg)
+![hinge](./blobs/hinge.jpg)
 
 相比球铰约束可以任意角度自由转动，合页约束只允许在一个相对平面内转动，比如人的膝关节，因此约束条件除了锚点重合外，还需要旋转轴平行。锚点重合的约束形式与上面相同，旋转轴平行的约束形式为：以其中一个刚体的旋转轴比如$n_a$作为参照，将另一个刚体的旋转轴约束到平行方向上，实现方式为：选择垂直于$n_a$并且相互垂直的两个方向$t_1$和$t_2$，要求刚体的角速度在这两个方向上的投影相等，即：$(\omega_a - \omega_b) \cdot t_i = 0$，如此以来两个刚体在除旋转轴方向上的其他旋转都是同步的。令$J_{ab\_\omega}=\left[\begin{matrix}
 t_i \\
@@ -285,7 +285,7 @@ I_a & 0 \\
 
 ### 滑轨约束（Slider Joint）
 
-![slider](https://notes.sjtu.edu.cn/uploads/upload_1a0022498474f6f772b44314c07c423f.jpg)
+![slider](./blobs/slider.jpg)
 
 滑轨约束的条件为：一个刚体只能沿着一条相对另一个刚体固定的轴向移动。
 
