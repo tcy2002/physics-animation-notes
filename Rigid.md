@@ -12,30 +12,15 @@
 
 - 惯性张量的性质：特征向量就是物体的主惯性轴，特征值是主转动惯量。并不是所有方向都是主惯性轴，绕主惯性轴旋转不会发生耦合，绕其他轴旋转会发生耦合，导致角速度和角动量不同向，产生进动。
 
-- 对于某些求解器，会把质量和惯性张量一并考虑： $\hat I\in R^{6\times 6}$ ， $\hat I=\left[\begin{matrix}
-M & 0\\
-0 & I
-\end{matrix}\right]$ ，其中 $M=mI_3$ ， $\hat I$ 也可看做广义质量矩阵；在某些求解器中，还会进一步将所有刚体的质量属性存成一个大型的稀疏矩阵。
+- 对于某些求解器，会把质量和惯性张量一并考虑： $\hat I\in R^{6\times 6}$ ， $\hat I=\left[\begin{matrix} M & 0\\ 0 & I\end{matrix}\right]$ ，其中 $M=mI_3$ ， $\hat I$ 也可看做广义质量矩阵；在某些求解器中，还会进一步将所有刚体的质量属性存成一个大型的稀疏矩阵。
 
 惯性张量矩阵和质量一样，属于已知常量，通常在刚体初始化时定好。一般形状的惯性张量矩阵要通过积分来求，一些常见的对称形状（质量为1、相对于质心）的惯性张量矩阵如下：
 
-- 立方体：长宽高分别为abc， $I=\left[\begin{matrix}
-  \frac{b^2+c^2}{12} & 0 & 0\\
-  0 & \frac{a^2+c^2}{12} & 0\\
-  0 & 0 & \frac{a^2+b^2}{12}
-\end{matrix}\right]$ 
+- 立方体：长宽高分别为abc， $I=\left[\begin{matrix}\frac{b^2+c^2}{12} & 0 & 0\\0 & \frac{a^2+c^2}{12} & 0\\0 & 0 & \frac{a^2+b^2}{12}\end{matrix}\right]$ 
 
-- 圆柱体：半径r高h， $I=\left[\begin{matrix}
-  \frac{3r^2+h^2}{12} & 0 & 0\\
-  0 & \frac{r^2}{2} & 0\\
-  0 & 0 & \frac{3r^2+h^2}{12}
-\end{matrix}\right]$ 
+- 圆柱体：半径r高h， $I=\left[\begin{matrix}\frac{3r^2+h^2}{12} & 0 & 0\\0 & \frac{r^2}{2} & 0\\0 & 0 & \frac{3r^2+h^2}{12}\end{matrix}\right]$ 
 
-- 椭球体：轴向半径分别为abc， $I=\left[\begin{matrix}
-  \frac{1}{5}(b^2+c^2) & 0 & 0\\
-  0 & \frac{1}{5}(a^2+c^2) & 0\\
-  0 & 0 & \frac{1}{5}(a^2+b^2)
-\end{matrix}\right]$ 
+- 椭球体：轴向半径分别为abc， $I=\left[\begin{matrix}\frac{1}{5}(b^2+c^2) & 0 & 0\\0 & \frac{1}{5}(a^2+c^2) & 0\\0 & 0 & \frac{1}{5}(a^2+b^2)\end{matrix}\right]$ 
 
 - 胶囊体的精确惯性张量矩阵相对比较复杂，需要分成上下两个半球体和中间的圆柱体，通过组合公式（平行轴定理）计算得到，一般物理引擎则会直接通过胶囊体的包围盒来计算。
 
@@ -115,9 +100,9 @@ M & 0\\
 ### 动力学过程
 
 不同的刚体物理教程对动力学过程有不同的表现形式，最简单直接的为：
-    $$M\ddot x=f$$
+  $$M\ddot x=f$$
 即牛顿第二定律，对于刚体系统而言，这里的 $f$ 和 $M$ 分别为广义力和广义质量矩阵。某些地方还会考虑非惯性系的情况，比如旋转的球体表面、旋转的机械臂抓取物体的过程，会引入一个额外项 $C(x,\dot x)$ 来表示科里奥利力和向心力：
-    $$M\ddot x+C(x,\dot x)=f$$
+  $$M\ddot x+C(x,\dot x)=f$$
 对于只有保守力场（比如重力场）的惯性系而言可以不用考虑。
 
 前面的积分方法是从运动学视角来看，而动力学过程则是动力学视角，二者需要综合来看，动力学过程中的力 $f$ 为积分中的二阶项（加速度）$\ddot x = a(t)$ 提供了来源。
@@ -159,19 +144,9 @@ M & 0\\
 **1. 约束公式推导**
 
 如前所属，考虑对速度进行约束，约束条件为两个刚体在相互接触的法向上不能发生相互侵入，即法向上的相对速度要在分离方向上大于等于0：
-    $$n\cdot(v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)\ge 0$$
-令 $J_{ab}=\left[\begin{matrix}
--n \\
--r_a\times n \\
-n \\
-r_b\times n
-\end{matrix}\right]^T$，$u=\left[\begin{matrix}
-v_a \\
-\omega_a \\
-v_b \\
-\omega_b
-\end{matrix}\right]$ ，（广义速度），则上面的式子可以写为： $J_{ab} u\ge 0$ ，这里对LCP问题的处理方式是，当碰撞检测的结果里出现了这对刚体，说明这对刚体有相互碰撞， $J_{ab} u < 0$ ，通过正的 $\Delta u$ （指$\Delta u \cdot n>0$）将其约束到
-    $$J_{ab}(u+\Delta u)= 0 \tag{1}$$
+  $$n\cdot(v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)\ge 0$$
+令 $J_{ab}=\left[\begin{matrix}-n \\-r_a\times n \\n \\r_b\times n\end{matrix}\right]^T$，$u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]$ ，（广义速度），则上面的式子可以写为： $J_{ab} u\ge 0$ ，这里对LCP问题的处理方式是，当碰撞检测的结果里出现了这对刚体，说明这对刚体有相互碰撞， $J_{ab} u < 0$ ，通过正的 $\Delta u$ （指$\Delta u \cdot n>0$）将其约束到
+  $$J_{ab}(u+\Delta u)= 0 \tag{1}$$
 的分离状态即可；如果碰撞检测后没有这对刚体，说明没有发生碰撞， $J_{ab} u \ge 0$，那么$\Delta u$ 就为0.
 
 这里的 $J_{ab}$ 正是描述整个刚体约束系统的雅可比矩阵的关于a和b碰撞的这一行（该行的其他维度都补充为0）。雅可比矩阵是从位置约束本身出发，再次说明速度作为位置的一阶导，用于求解约束是合理的。
@@ -179,20 +154,11 @@ v_b \\
 **2. 约束求解过程**
 
 由于梯度方向变化率最大，可以将 $\Delta u$ 的方向固定在梯度方向上，这里的梯度方向就是 $J_{ab}$ 所描述的方向。另外，根据牛顿第一定律，相互作用的刚体产生的相互作用力相同，因此令 $F_{ab}=J_{ab}^T\lambda$ ，那么两个刚体的速度变化量就为
-    $$\Delta u = \Delta tM^{-1}F_{ab} = \Delta t M^{-1}J_{ab}^T\lambda$$
-其中$M$是这两个刚体的广义质量矩阵： $M=\left[\begin{matrix}
-\hat I_a & 0 \\
-0 & \hat I_b
-\end{matrix}\right]=
-\left[\begin{matrix}
-m_a I_3 & 0 & 0 & 0 \\
-0 & I_a & 0 & 0 \\
-0 & 0 & m_b I_3 & 0 \\
-0 & 0 & 0 & I_b
-\end{matrix}\right]$ ， $I_3$ 是三阶单位矩阵， $I_a$ 和 $I_b$ 分别是刚体a和b在世界坐标系下的惯性张量矩阵。
+  $$\Delta u = \Delta tM^{-1}F_{ab} = \Delta t M^{-1}J_{ab}^T\lambda$$
+其中$M$是这两个刚体的广义质量矩阵： $M=\left[\begin{matrix}\hat I_a & 0 \\0 & \hat I_b\end{matrix}\right]=\left[\begin{matrix}m_a I_3 & 0 & 0 & 0 \\0 & I_a & 0 & 0 \\0 & 0 & m_b I_3 & 0 \\0 & 0 & 0 & I_b\end{matrix}\right]$ ， $I_3$ 是三阶单位矩阵， $I_a$ 和 $I_b$ 分别是刚体a和b在世界坐标系下的惯性张量矩阵。
 
 把 $\Delta u$ 代入到式子 $(1)$ 中可以得到： $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u$ ，这里 $\Delta t$ 被吸收进 $\lambda$ 里了，由于直接求解会有jitter（表现为刚体上下抖动，上一帧有碰撞下一帧没碰撞，反复横跳），所以在右侧加上一个bias项：
-    $$J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b$$
+  $$J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b$$
 这个式子就是经典的基于冲量（速度）的碰撞约束求解公式。实际计算时bias项是一个与误差修正有关的项，后面会提到。求得 $\lambda=\frac{-J_{ab}u+b}{J_{ab} M^{-1}J_{ab}^T}$ 之后，根据上面求出 $J_{ab}^T\lambda$ 即可得到约束冲量。由于 $M^{-1}$ 是一个不变的质量属性矩阵，所以可以事先计算得到，不需要每次计算时求逆。
 
 **3. 恢复系数与误差修正**
@@ -209,13 +175,13 @@ m_a I_3 & 0 & 0 & 0 \\
 
 **5. 积分方法**
 
-PhysX等引擎采用的是半隐式欧拉，根据上面求出的$\Delta u$更新速度是显式欧拉，用更新之后的速度更新位置是隐式欧拉，对于游戏需求而言已经可以获得较好的稳定性了，无需使用更高阶的积分方法。
+PhysX等引擎采用的是半隐式欧拉，根据上面求出的 $\Delta u$ 更新速度是显式欧拉，用更新之后的速度更新位置是隐式欧拉，对于游戏需求而言已经可以获得较好的稳定性了，无需使用更高阶的积分方法。
 
 **6. 其他问题**
 
 - 进动项问题
   
-  可能会有疑问：为什么前面的推导过程没体现牛顿-欧拉方程里的进动项$\omega\times I\omega$？因为产生进动项的本质原因是惯性张量$I$在随时间变化，所以对角动量取微分$d(I\omega)$时产生了进动项，而上面的求解过程所采用的是瞬时冲量，因此将$I$视为常量。
+  可能会有疑问：为什么前面的推导过程没体现牛顿-欧拉方程里的进动项 $\omega\times I\omega$ ？因为产生进动项的本质原因是惯性张量 $I$ 在随时间变化，所以对角动量取微分 $d(I\omega)$ 时产生了进动项，而上面的求解过程所采用的是瞬时冲量，因此将 $I$ 视为常量。
 
 - 与基于力的约束的关系
 
@@ -223,12 +189,7 @@ PhysX等引擎采用的是半隐式欧拉，根据上面求出的$\Delta u$更�
   $$JWJ^T\lambda=-JWQ-\dot J\dot q \tag a$$
   $$J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b \tag b$$
   前者从单个物体的位置的视角出发，求解满足当前约束条件的约束力，然后通过积分方法来更新位置和速度（这里需要考虑欧拉方程的进动项了）；后者从两个物体的相对速度视角出发，求解满足当前约束所需的校正冲量。
-  实际上，令 $q=\left[\begin{matrix}
-  P_a \\
-  r_a \\
-  P_b \\
-  r_b
-  \end{matrix}\right]$ ，$J_{ab}$不变，则位置约束为：
+  实际上，令 $q=\left[\begin{matrix}P_a \\r_a \\P_b \\r_b\end{matrix}\right]$ ，$J_{ab}$不变，则位置约束为：
   $$\dot C(q)=\frac{\partial C}{\partial q}\cdot \dot q = J_{ab}\dot q=0 \tag c$$
   $$\ddot C(q)=\frac{\partial \dot C}{\partial q}\cdot \dot q + \frac{\partial C}{\partial q}\cdot \ddot q=\dot J_{ab}\dot q + J_{ab}\ddot q = 0 \tag d$$
   式(d)中的 $\frac{\partial \dot C}{\partial q}\cdot \dot q$ 在前面的推导过程中被忽略了。另外，式(b)中 $J_{ab}u$ 是需要校正的相对速度，式(a)中 $JWQ$ 是外力作用下约束方向上的速度变化量，在形式上是类似的。
@@ -250,17 +211,7 @@ PhysX等引擎采用的是半隐式欧拉，根据上面求出的$\Delta u$更�
 
 ![ball-in-socket](./blobs/ball-in-socket.png)
 
-球铰约束的条件为：两个刚体上各有一个相对于自身的锚点（Anchor），相对于各自质心 $P_a$ 和 $P_b$ 的位置分别为 $r_a$ 和 $r_b$ ，这两个锚点在模拟中保持位置重合。同样考虑速度约束，约束形式为： $v_b+\omega_b\times r_b-v_a-\omega_a\times r_a=0$ （即去掉了碰撞约束中与法向有关的部分），仍然令 $J_{ab}=\left[\begin{matrix}
--I_3 \\
-r_a^\times \\
-I_3 \\
--r_b^\times
-\end{matrix}\right]^T$，$u=\left[\begin{matrix}
-v_a \\
-\omega_a \\
-v_b \\
-\omega_b
-\end{matrix}\right]$ ，约束公式为： $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b$ ，接下来的求解过程就与碰撞约束没有区别了。球铰约束的误差修正项为两个锚点的实际距离。
+球铰约束的条件为：两个刚体上各有一个相对于自身的锚点（Anchor），相对于各自质心 $P_a$ 和 $P_b$ 的位置分别为 $r_a$ 和 $r_b$ ，这两个锚点在模拟中保持位置重合。同样考虑速度约束，约束形式为： $v_b+\omega_b\times r_b-v_a-\omega_a\times r_a=0$ （即去掉了碰撞约束中与法向有关的部分），仍然令 $J_{ab}=\left[\begin{matrix}-I_3 \\r_a^\times \\I_3 \\-r_b^\times\end{matrix}\right]^T$，$u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]$ ，约束公式为： $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b$ ，接下来的求解过程就与碰撞约束没有区别了。球铰约束的误差修正项为两个锚点的实际距离。
 
 为什么这里的 $J_{ab}$ 维度是 $3\times 12$ 而不是和前面一样的 $1\times 12$ ？因为球铰约束有三个自由度，将三个自由度分开些的形式为 $e_i \cdot (v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)=0$ ， $e_i$ 是轴向单位矢量 $e_x,e_y,e_z$ 
 
@@ -272,16 +223,7 @@ v_b \\
 
 ![hinge](./blobs/hinge.jpg)
 
-相比球铰约束可以任意角度自由转动，合页约束只允许在一个相对平面内转动，比如人的膝关节，因此约束条件除了锚点重合外，还需要旋转轴平行。锚点重合的约束形式与上面相同，旋转轴平行的约束形式为：以其中一个刚体的旋转轴比如 $n_a$ 作为参照，将另一个刚体的旋转轴约束到平行方向上，实现方式为：选择垂直于 $n_a$ 并且相互垂直的两个方向 $t_1$ 和 $t_2$ ，要求刚体的角速度在这两个方向上的投影相等，即： $(\omega_a - \omega_b) \cdot t_i = 0$ ，如此以来两个刚体在除旋转轴方向上的其他旋转都是同步的。令 $J_{ab\_\omega}=\left[\begin{matrix}
-t_i \\
--t_i
-\end{matrix}\right]^T$，$\omega=\left[\begin{matrix}
-\omega_a \\
-\omega_b
-\end{matrix}\right]$，$M_\omega=\left[\begin{matrix}
-I_a & 0 \\
-0 & I_b
-\end{matrix}\right]$ ，约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为两个旋转轴的实际偏差，即 $n_a\times n_b \cdot t_i$ 
+相比球铰约束可以任意角度自由转动，合页约束只允许在一个相对平面内转动，比如人的膝关节，因此约束条件除了锚点重合外，还需要旋转轴平行。锚点重合的约束形式与上面相同，旋转轴平行的约束形式为：以其中一个刚体的旋转轴比如 $n_a$ 作为参照，将另一个刚体的旋转轴约束到平行方向上，实现方式为：选择垂直于 $n_a$ 并且相互垂直的两个方向 $t_1$ 和 $t_2$ ，要求刚体的角速度在这两个方向上的投影相等，即： $(\omega_a - \omega_b) \cdot t_i = 0$ ，如此以来两个刚体在除旋转轴方向上的其他旋转都是同步的。令 $J_{ab\_\omega}=\left[\begin{matrix}t_i \\-t_i\end{matrix}\right]^T$ ， $\omega=\left[\begin{matrix}\omega_a \\\omega_b\end{matrix}\right]$，$M_\omega=\left[\begin{matrix}I_a & 0 \\0 & I_b\end{matrix}\right]$ ，约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为两个旋转轴的实际偏差，即 $n_a\times n_b \cdot t_i$ 
 
 ### 滑轨约束（Slider Joint）
 
@@ -289,25 +231,10 @@ I_a & 0 \\
 
 滑轨约束的条件为：一个刚体只能沿着一条相对另一个刚体固定的轴向移动。
 
-角度约束：两个刚体的角速度必须完全一致，即： $I_3(\omega_a - \omega_b) = 0$ ， $J_{ab\_\omega}=\left[\begin{matrix}
-I_3 \\
--I_3
-\end{matrix}\right]^T$，$\omega=\left[\begin{matrix}
-\omega_a \\
-\omega_b
-\end{matrix}\right]$ ，约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为角速度的差.
+角度约束：两个刚体的角速度必须完全一致，即： $I_3(\omega_a - \omega_b) = 0$ ， $J_{ab\_\omega}=\left[\begin{matrix}I_3 \\-I_3\end{matrix}\right]^T$，$\omega=\left[\begin{matrix}\omega_a \\\omega_b\end{matrix}\right]$ ，约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为角速度的差.
 
-轴向位置约束：以轴 $n$ 为参考，刚体不能在切向 $t_1$ 和 $t_2$ 上发生相对位移： $t_i \cdot (v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)=0$ ， $J_{ab}=\left[\begin{matrix}
--t_i \\
--r_a \times t_i \\
-t_i \\
-r_b \times t_i
-\end{matrix}\right]^T$，$u=\left[\begin{matrix}
-v_a \\
-\omega_a \\
-v_b \\
-\omega_b
-\end{matrix}\right]$ ，约束公式为 $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u + b$ ，误差修正项为切向$t_i$上偏离的距离。
+轴向位置约束：以轴 $n$ 为参考，刚体不能在切向 $t_1$ 和 $t_2$ 上发生相对位移： $t_i \cdot (v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)=0$ ， $J_{ab}=\left[\begin{matrix}-t_i \\
+-r_a \times t_i \\t_i \\r_b \times t_i\end{matrix}\right]^T$，$u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]$ ，约束公式为 $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u + b$ ，误差修正项为切向$t_i$上偏离的距离。
 
 ### 自定义自由度约束（6-DOF Joint）
 
@@ -345,7 +272,7 @@ Ragdoll是物理角色动画的一种，用于实时地、符合物理规律地�
 ### IPC, Primal-Dual
 
 1. IPC：Incremental Potential Contact，增量势能接触模型：
-    $$x^{t+1}=\text{argmin}_x E_d(x,x^t,v^t)+B(x,\hat d)+D(x,\hat d)$$
+  $$x^{t+1}=\text{argmin}_x E_d(x,x^t,v^t)+B(x,\hat d)+D(x,\hat d)$$
 - 增量势能 $E_d$ 保证动力学合理性：让运动符合惯性、动量等物理规律
     - 增量势能最小化本质是牛顿-欧拉动力学方程的数值离散形式（能量变分原理），“力与运动的平衡”等价于“能量极小化”
 - 障碍势能 $B$ 保证几何约束：避免物体穿透，原理与内点法相似
@@ -356,7 +283,7 @@ IPC的迭代过程：
 - ③收敛判断：若更新步长小于阈值，重新计算的接触信息中接触点距离均 $\ge 0$ ，则终止迭代，否则回到①
 
 2. Primal-Dual，原始对偶内点法
-    $$min _{v} max _{r} \frac{1}{2}(v-\overline{v})^{\top} M(v-\overline{v}) +\overline{U}(v) -v^{\top} H^{\top} r+\kappa \sum_{i} log \left(-b_{i}(r)\right)$$
+  $$min _{v} max _{r} \frac{1}{2}(v-\overline{v})^{\top} M(v-\overline{v}) +\overline{U}(v) -v^{\top} H^{\top} r+\kappa \sum_{i} log \left(-b_{i}(r)\right)$$
 - 约束松弛：将法向、摩擦约束用障碍函数转化为无约束优化问题
 - KKT系统：对松弛后的目标函数求导，得到一阶最优条件，形成包括原始变量（刚体位置）和对偶变量（拉格朗日乘子$\lambda$）的KKT系统
 - 用牛顿迭代求解KKT系统，逐步减小障碍参数 $\kappa$ 直到满足收敛条件。
@@ -365,7 +292,7 @@ IPC的迭代过程：
 ### Siconos
 与IPC和Primal-Dual将刚体的非平滑约束转化为平滑约束的思路不同，Siconos求解器采用的是非平滑牛顿求解器，直接将刚体接触和摩擦的动力学方程转化为混合互补问题（MCP，LCP的变种），这些约束本身存在导数跳变，无法用针对平滑方程的牛顿求解器来优化，但可通过以下两种方法进行转化：
 - 互补函数，比如法向约束可转化为：
-    $$\Phi(r_N,u_N)=r_Nu_N+\epsilon ln(1+r_N^2+u_N^2)=0$$
+  $$\Phi(r_N,u_N)=r_Nu_N+\epsilon ln(1+r_N^2+u_N^2)=0$$
   其中 $\epsilon$ 是正则化参数，使函数在原点附近平滑化
 - 克拉克次梯度：对于非平滑函数，计算其导数跳变点的克拉克次梯度（所有可能的导数的集合），构建次梯度矩阵，将牛顿迭代的搜索方向定义为次梯度的解
 与IPC通过接触势能、Primal-Dual通过障碍函数对约束进行平滑化的思路不同，以上两种方法都是在数值层面解决非平滑因素。
