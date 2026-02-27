@@ -38,65 +38,6 @@
 
 由于储存性能，额外引入的误差等原因，游戏物理引擎中一般不会用到齐次坐标。
 
-### 数学基础
-
-1. 线性方程求解
-
-- 雅可比（Jocabian）矩阵 $J$ ：约束的一阶导矩阵。矢量$x\in R^n$的约束$C$表示为： $f(x)=(\le,\ge) 0$ ，存在若干个这样的约束 $C_1,C_2,...C_m$ ，则雅可比矩阵 $J\in R^{m\times n}$ ：
-  $$J=\left[\begin{matrix}
-  \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & ... & \frac{\partial f_1}{\partial x_n} \\
-  \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & ... & \frac{\partial f_2}{\partial x_n} \\
-  \vdots & \vdots & \ddots & \vdots \\
-  \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
-  \end{matrix}\right]$$
-  类似的还有海森（Hessian）矩阵：约束的二阶导矩阵，但与雅可比矩阵不同的是，每个约束都有一个自己的海森矩阵：
-  $$H_i=\left[\begin{matrix}
-  \frac{\partial^2 f_i}{{\partial x_1}^2} & \frac{\partial^2 f_i}{\partial x_1\partial x_2} & ... & \frac{\partial^2 f_i}{\partial x_1\partial x_n} \\
-  \frac{\partial^2 f_i}{\partial x_1\partial x_2} & \frac{\partial^2 f_i}{{\partial x_2}^2} & ... & \frac{\partial^2 f_i}{\partial x_2\partial x_n} \\
-  \vdots & \vdots & \ddots & \vdots \\
-  \frac{\partial^2 f_i}{\partial x_1\partial x_n} & \frac{\partial^2 f_i}{\partial x_2\partial x_n} & ... & \frac{\partial^2 f_i}{{\partial x_n}^2}
-  \end{matrix}\right]$$
-  雅可比矩阵描述了各个位置的约束梯度，海森矩阵则描述的是各个位置的约束曲率。
-- 雅可比迭代、Gauss-Seidel迭代、PGS：参考[MathUtils](https://github.com/tcy2002/physics-animation-notes/blob/main/MathUtils.md)
-
-2. 非线性优化问题
-这部分内容是IPC、原始对偶等方法的基础，如果只看基于速度（冲量）的部分可以跳过。
-
-- 序列二次规划（SQP）：将复杂非线性约束问题拆分成一系列简单的二次规划子问题，并且把约束近似为线性函数，解QP子问题得到下一步的搜索方向。
-  直观例子：
-    - 目标：找到圆 $x^2+y^2=1$ 上距离 $(2,2)$ 最近的点
-    - 建模：
-        - 目标:  $\text{argmin}_{x,y}(x-2)^2+(y-2)^2$ ，非线性二次函数
-        - 约束:  $x^2+y^2-1=0$ ，非线性等式约束
-    - 思路：目标函数二次化，约束线性化
-    - 迭代过程：从点 $(1,0)$ 开始，此处在约束圆上的切线是 $x=1$ ，所以这一步变成了在直线 $x=1$ 上找距离 $(2,2)$ 最近的点，得到 $(1,2)$ ，然后修正到圆上得到 $(\frac{\sqrt{5}}{5},\frac{2\sqrt{5}}{5})$ ，继续下一次迭代
-    - 分析：把圆上找点优化为切线上找点就是约束线性化；在直线 $x=1$ 上找距 $(2,2)$ 最近的点时，可以理解为将 $x=1$ 代入约束方程，得到一个降次后的关于 $y$ 的方程，然后通过 $y=0$ 附近的梯度（雅可比矩阵）和曲率（海森矩阵）构建二次方程，找到最低的位置作为新的位置，实际上这里的目标方程就是二次方程，所以所构建的二次方程和原本的目标方程是完全贴合的。约束线性化的目的：降维，目标函数二次化的目的：方便找最低点
-- 牛顿法和拟牛顿法：牛顿法利用二阶导（海森矩阵）来寻找搜索方向，拟牛顿法不直接计算海森矩阵，利用历次迭代的梯度变化估算海森矩阵
-  仍然用上面的例子：
-    - 构造拉格朗日： $L(x,y,\lambda)=(x-2)^2+(y-2)^2+\lambda\cdot(x^2+y^2-1)$
-    - 目标：找到一组 $(x,y,\lambda)$ ，使得$L$的梯度全为0，即找到了 $L$ 的极值点位置（KKT条件）
-    - 牛顿法迭代过程：从点 $(1,0)$ 、 $\lambda=0$ 开始，发现梯度方程的结果不为0（残差），那么计算曲率（海森矩阵），用海森矩阵的逆和残差值算出跳跃步长 $(\Delta x,\Delta y, \Delta\lambda)$ ，得到下一个点。牛顿法收敛很快，因为是根据全量海森矩阵计算的步长。
-    - 拟牛顿法迭代过程：并不在每一步都计算全量的海森矩阵，而是从单位矩阵 $H_0=I$ 开始，根据前后步骤的梯度变化更新曲率的值。拟牛顿法比牛顿法收敛慢一点，但比纯梯度法快得多。 
-    - 与PGS类似，也有投影牛顿法，即获得新的迭代结果后，须投影到约束可行域内，如旋转正交性修正等。
-- 内点法：包括障碍函数和原始-对偶方法，原本是用于处理非线性规划（NLP）的方法，但可扩展到凸非线性优化中。
-    - 障碍函数：相比于单纯形法在边界上行走，内点法通过边界施加斥力保持在可行域内取点，无法真正碰到边界
-        - 目标： $\min c^T x$ 
-        - 约束： $Ax\ge b,x\ge 0$ 
-        - 构造带惩罚的目标： $\min c^T x-\mu\sum _{i=1}^n \ln(x_i)$ ，转换为平滑无约束问题
-    - 迭代过程：设定一个较大的障碍参数$\mu$，用牛顿法解出极小值点，然后逐步减小$\mu$，边界的斥力逐渐减小，向真实问题的最优解靠近。
-    - 原始-对偶法：直接使用障碍函数有一个问题：当$x$很小时， $-\ln x$ 的倒数变得很大，导致海森矩阵奇异化，难以精确求解。
-        - 对偶目标： $\max b^T y$ 
-        - 约束： $A^T y+s=c,y\ge 0$ ， $y$ 是对偶变量， $s$ 是松弛变量
-        - 解KKT条件来逐步逼近最优解：
-            - $Ax-b=0$ 原问题约束
-            - $A^T \lambda +s-c=0$ 对偶问题约束，含松弛变量
-            - $XSe-\epsilon e=0$ 互补松弛性，隐含了障碍函数的导数
-        - 在原始对偶法中，虽然$x$和$s$也会趋于0，但综合考虑原问题和对偶问题约束条件时，数值稳定性要优于直接求障碍函数导数，可以比较准确地预测$x$和$s$的变化方向。
-
-### 积分方法
-
-包括欧拉、中点法、Runge-Kuta、Verlet积分等，参考[ODE](https://github.com/tcy2002/physics-animation-notes/blob/main/ODE.md). 游戏引擎一般用半隐式欧拉即可，不需要更高的精度。
-
 ### 动力学过程
 
 不同的刚体物理教程对动力学过程有不同的表现形式，最简单直接的为：
@@ -271,7 +212,7 @@ Ragdoll是物理角色动画的一种，用于实时地、符合物理规律地�
 
 ### IPC, Primal-Dual
 
-1. IPC：Incremental Potential Contact，增量势能接触模型：
+1. IPC：Incremental Potential Contact，增量势能接触模型（能量变分原理）：
   $$x^{t+1}=\text{argmin}_x E_d(x,x^t,v^t)+B(x,\hat d)+D(x,\hat d)$$
 - 增量势能 $E_d$ 保证动力学合理性：让运动符合惯性、动量等物理规律
     - 增量势能最小化本质是牛顿-欧拉动力学方程的数值离散形式（能量变分原理），“力与运动的平衡”等价于“能量极小化”
