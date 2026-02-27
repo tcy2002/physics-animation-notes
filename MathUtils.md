@@ -13,14 +13,14 @@
 
 - 雅可比（Jocabian）矩阵 $J$ ：约束的一阶导矩阵。矢量 $x\in R^n$ 的约束 $C$ 表示为： $f(x)=(\le,\ge) 0$ ，存在若干个这样的约束 $C_1,C_2,...C_m$ ，则雅可比矩阵 $J\in R^{m\times n}$ ：
 
-  $$
-  J=\left[\begin{matrix}
-  \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & ... & \frac{\partial f_1}{\partial x_n} \\
-  \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & ... & \frac{\partial f_2}{\partial x_n} \\
-  \vdots & \vdots & \ddots & \vdots \\
-  \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
-  \end{matrix}\right]
-  $$
+$$
+J=\left[\begin{matrix}
+\frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & ... & \frac{\partial f_1}{\partial x_n} \\
+\frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & ... & \frac{\partial f_2}{\partial x_n} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
+\end{matrix}\right]
+$$
 
   类似的还有海森（Hessian）矩阵：约束的二阶导矩阵，但与雅可比矩阵不同的是，每个约束都有一个自己的海森矩阵：
 
