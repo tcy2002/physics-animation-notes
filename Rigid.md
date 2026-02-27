@@ -15,7 +15,11 @@
 - 对于某些求解器，会把质量和惯性张量一并考虑： $\hat I\in R^{6\times 6}$ ，
 
 $$
-\hat I=\left[\begin{matrix} M & 0\\ 0 & I\end{matrix}\right]
+\hat I=
+\left[\begin{matrix} 
+M & 0 \\ 
+0 & I
+\end{matrix}\right]
 $$
 
   其中 $M=mI_3$ ， $\hat I$ 也可看做广义质量矩阵；在某些求解器中，还会进一步将所有刚体的质量属性存成一个大型的稀疏矩阵。
