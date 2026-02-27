@@ -127,7 +127,10 @@ $$
 将下面的迭代公式代入上式：
 
 $$
-u^{(n+1)}=u^{(n)}-\frac{\Delta t}{\rho}\nabla p^{(n+1)} \tag 3
+\begin{aligned}
+u^{(n+1)}=u^{(n)}-\frac{\Delta t}{\rho}\nabla p^{(n+1)}
+\end{aligned}
+\tag 3
 $$
 
 其中 $\nabla p^{(n+1)}=\frac{p^{(n+1)}_{i+1,j}-p^{(n+1)}_{i,j}}{\Delta x}$ （以 $u^{(n+1)}_{i+\frac{1}{2},j}$ 为例），得到：
