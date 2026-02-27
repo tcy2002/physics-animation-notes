@@ -57,8 +57,8 @@ $$
 \begin{aligned}
 \frac{Du}{Dt}&=g-\frac{1}{\rho}\nabla p \\ 
 \nabla \cdot u&=0 
-\tag 1
 \end{aligned}
+\tag 1
 $$
 
 接下来有一个小trick，使用分步（splitting）方法来更新速度变化。若 $q$ 关于 $t$ 的导数为：
