@@ -275,7 +275,32 @@ $$
 
 ![hinge](./blobs/hinge.jpg)
 
-相比球铰约束可以任意角度自由转动，合页约束只允许在一个相对平面内转动，比如人的膝关节，因此约束条件除了锚点重合外，还需要旋转轴平行。锚点重合的约束形式与上面相同，旋转轴平行的约束形式为：以其中一个刚体的旋转轴比如 $n_a$ 作为参照，将另一个刚体的旋转轴约束到平行方向上，实现方式为：选择垂直于 $n_a$ 并且相互垂直的两个方向 $t_1$ 和 $t_2$ ，要求刚体的角速度在这两个方向上的投影相等，即： $(\omega_a - \omega_b) \cdot t_i = 0$ ，如此以来两个刚体在除旋转轴方向上的其他旋转都是同步的。令 $J_{ab\_\omega}=\left[\begin{matrix}t_i \\-t_i\end{matrix}\right]^T$ ， $\omega=\left[\begin{matrix}\omega_a \\\omega_b\end{matrix}\right]$，$M_\omega=\left[\begin{matrix}I_a & 0 \\0 & I_b\end{matrix}\right]$ ，约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为两个旋转轴的实际偏差，即 $n_a\times n_b \cdot t_i$ 
+相比球铰约束可以任意角度自由转动，合页约束只允许在一个相对平面内转动，比如人的膝关节，因此约束条件除了锚点重合外，还需要旋转轴平行。锚点重合的约束形式与上面相同，旋转轴平行的约束形式为：以其中一个刚体的旋转轴比如 $n_a$ 作为参照，将另一个刚体的旋转轴约束到平行方向上，实现方式为：选择垂直于 $n_a$ 并且相互垂直的两个方向 $t_1$ 和 $t_2$ ，要求刚体的角速度在这两个方向上的投影相等，即： $(\omega_a - \omega_b) \cdot t_i = 0$ ，如此以来两个刚体在除旋转轴方向上的其他旋转都是同步的。令 
+
+$$
+J_{ab\_\omega}=
+\left[\begin{matrix}
+t_i \\
+-t_i
+\end{matrix}\right]^T
+$$
+
+$$
+\omega=\left[\begin{matrix}
+\omega_a \\
+\omega_b
+\end{matrix}\right]
+$$
+
+$$
+M_\omega=
+\left[\begin{matrix}
+I_a & 0 \\
+0 & I_b
+\end{matrix}\right]
+$$
+
+约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为两个旋转轴的实际偏差，即 $n_a\times n_b \cdot t_i$ 
 
 ### 滑轨约束（Slider Joint）
 
