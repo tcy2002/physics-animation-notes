@@ -186,6 +186,9 @@ M=
 \hat I_a & 0 \\
 0 & \hat I_b
 \end{matrix}\right]
+$$
+
+$$
 =
 \left[\begin{matrix}
 m_a I_3 & 0 & 0 & 0 \\
