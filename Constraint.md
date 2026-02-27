@@ -44,7 +44,10 @@ $$
 $$
 
 $$
-\frac{\partial C}{\partial x}\cdot (\frac{1}{m} \frac{\partial C}{\partial x} \lambda)=-\frac{\partial C}{\partial x}\cdot \frac{f}{m}-\frac{\partial \dot C}{\partial x}\cdot \dot x \tag 1
+\begin{aligned}
+\frac{\partial C}{\partial x}\cdot (\frac{1}{m} \frac{\partial C}{\partial x} \lambda)=-\frac{\partial C}{\partial x}\cdot \frac{f}{m}-\frac{\partial \dot C}{\partial x}\cdot \dot x 
+\end{aligned}
+\tag 1
 $$
 
 然后可以得到 $\lambda$ ，进而可以得到约束力 $\hat f$ ，这就是基于力的约束模型。
