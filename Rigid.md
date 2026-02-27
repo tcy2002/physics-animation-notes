@@ -241,7 +241,29 @@ $$
 
 ![ball-in-socket](./blobs/ball-in-socket.png)
 
-球铰约束的条件为：两个刚体上各有一个相对于自身的锚点（Anchor），相对于各自质心 $P_a$ 和 $P_b$ 的位置分别为 $r_a$ 和 $r_b$ ，这两个锚点在模拟中保持位置重合。同样考虑速度约束，约束形式为： $v_b+\omega_b\times r_b-v_a-\omega_a\times r_a=0$ （即去掉了碰撞约束中与法向有关的部分），仍然令 $J_{ab}=\left[\begin{matrix}-I_3 \\r_a^\times \\I_3 \\-r_b^\times\end{matrix}\right]^T$，$u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]$ ，约束公式为： $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b$ ，接下来的求解过程就与碰撞约束没有区别了。球铰约束的误差修正项为两个锚点的实际距离。
+球铰约束的条件为：两个刚体上各有一个相对于自身的锚点（Anchor），相对于各自质心 $P_a$ 和 $P_b$ 的位置分别为 $r_a$ 和 $r_b$ ，这两个锚点在模拟中保持位置重合。同样考虑速度约束，约束形式为： $v_b+\omega_b\times r_b-v_a-\omega_a\times r_a=0$ （即去掉了碰撞约束中与法向有关的部分），仍然令 
+
+$$
+J_{ab}=
+\left[\begin{matrix}
+-I_3 \\ 
+r_a^\times \\
+I_3 \\
+-r_b^\times
+\end{matrix}\right]^T
+$$
+
+$$
+u=
+\left[\begin{matrix}
+v_a \\
+\omega_a \\
+v_b \\
+\omega_b
+\end{matrix}\right]
+$$
+
+约束公式为： $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b$ ，接下来的求解过程就与碰撞约束没有区别了。球铰约束的误差修正项为两个锚点的实际距离。
 
 为什么这里的 $J_{ab}$ 维度是 $3\times 12$ 而不是和前面一样的 $1\times 12$ ？因为球铰约束有三个自由度，将三个自由度分开些的形式为 $e_i \cdot (v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)=0$ ， $e_i$ 是轴向单位矢量 $e_x,e_y,e_z$ 
 
