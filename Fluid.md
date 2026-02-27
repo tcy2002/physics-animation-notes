@@ -92,7 +92,9 @@ $$
 这一步需要用
 
 $$
+\begin{aligned}
 x'=x_i-\bar u\Delta t 
+\end{aligned}
 \tag 2
 $$
 
