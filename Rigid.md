@@ -49,6 +49,7 @@ I=
 $$ 
 
 - 椭球体：轴向半径分别为abc，
+
 $$
 I=
 \left[\begin{matrix}
@@ -134,7 +135,29 @@ $$
 n\cdot(v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)\ge 0
 $$
 
-令 $J_{ab}=\left[\begin{matrix}-n \\-r_a\times n \\n \\r_b\times n\end{matrix}\right]^T$，$u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]$ ，（广义速度），则上面的式子可以写为： $J_{ab} u\ge 0$ ，这里对LCP问题的处理方式是，当碰撞检测的结果里出现了这对刚体，说明这对刚体有相互碰撞， $J_{ab} u < 0$ ，通过正的 $\Delta u$ （指$\Delta u \cdot n>0$）将其约束到
+令
+
+$$
+J_{ab}=
+\left[\begin{matrix}
+-n \\
+-r_a\times n \\
+n \\
+r_b\times n
+\end{matrix}\right]^T
+$$
+
+$$
+u=
+\left[\begin{matrix}
+v_a \\
+\omega_a \\
+v_b \\
+\omega_b
+\end{matrix}\right]
+$$
+
+则上面的式子可以写为： $J_{ab} u\ge 0$ ，这里对LCP问题的处理方式是，当碰撞检测的结果里出现了这对刚体，说明这对刚体有相互碰撞， $J_{ab} u < 0$ ，通过正的 $\Delta u$ （指$\Delta u \cdot n>0$）将其约束到
   
 $$
 \begin{aligned}
@@ -155,7 +178,22 @@ $$
 \Delta u = \Delta tM^{-1}F_{ab} = \Delta t M^{-1}J_{ab}^T\lambda
 $$
 
-其中$M$是这两个刚体的广义质量矩阵： $M=\left[\begin{matrix}\hat I_a & 0 \\0 & \hat I_b\end{matrix}\right]=\left[\begin{matrix}m_a I_3 & 0 & 0 & 0 \\0 & I_a & 0 & 0 \\0 & 0 & m_b I_3 & 0 \\0 & 0 & 0 & I_b\end{matrix}\right]$ ， $I_3$ 是三阶单位矩阵， $I_a$ 和 $I_b$ 分别是刚体a和b在世界坐标系下的惯性张量矩阵。
+其中 $M$ 是这两个刚体的广义质量矩阵：
+$$
+M=
+\left[\begin{matrix}
+\hat I_a & 0 \\
+0 & \hat I_b
+\end{matrix}\right]
+=
+\left[\begin{matrix}
+m_a I_3 & 0 & 0 & 0 \\
+0 & I_a & 0 & 0 \\
+0 & 0 & m_b I_3 & 0 \\
+0 & 0 & 0 & I_b
+\end{matrix}\right]$$ 
+
+其中 $I_3$ 是三阶单位矩阵， $I_a$ 和 $I_b$ 分别是刚体a和b在世界坐标系下的惯性张量矩阵。
 
 把 $\Delta u$ 代入到式子 $(1)$ 中可以得到： $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u$ ，这里 $\Delta t$ 被吸收进 $\lambda$ 里了，由于直接求解会有jitter（表现为刚体上下抖动，上一帧有碰撞下一帧没碰撞，反复横跳），所以在右侧加上一个bias项：
   
@@ -206,7 +244,19 @@ J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b
 $$
 
   前者从单个物体的位置的视角出发，求解满足当前约束条件的约束力，然后通过积分方法来更新位置和速度（这里需要考虑欧拉方程的进动项了）；后者从两个物体的相对速度视角出发，求解满足当前约束所需的校正冲量。
-  实际上，令 $q=\left[\begin{matrix}P_a \\r_a \\P_b \\r_b\end{matrix}\right]$ ，$J_{ab}$不变，则位置约束为：
+  实际上，令
+  
+$$
+q=
+\left[\begin{matrix}
+P_a \\
+r_a \\
+P_b \\
+r_b
+\end{matrix}\right]
+$$
+
+$J_{ab}$不变，则位置约束为：
 
 $$
 \begin{aligned}
@@ -308,7 +358,25 @@ $$
 
 滑轨约束的条件为：一个刚体只能沿着一条相对另一个刚体固定的轴向移动。
 
-角度约束：两个刚体的角速度必须完全一致，即： $I_3(\omega_a - \omega_b) = 0$ ， $J_{ab\_\omega}=\left[\begin{matrix}I_3 \\-I_3\end{matrix}\right]^T$，$\omega=\left[\begin{matrix}\omega_a \\\omega_b\end{matrix}\right]$ ，约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为角速度的差.
+角度约束：两个刚体的角速度必须完全一致，即： $I_3(\omega_a - \omega_b) = 0$ ，
+
+$$
+J_{ab\_\omega}=
+\left[\begin{matrix}
+I_3 \\
+-I_3
+\end{matrix}\right]^T
+$$
+
+$$
+\omega=
+\left[\begin{matrix}
+\omega_a \\
+\omega_b
+\end{matrix}\right]
+$$
+
+约束公式为： $J_{ab\_\omega} M_\omega^{-1}J_{ab\_\omega}^T\lambda_\omega=-J_{ab\_\omega}\omega + b$ ，误差修正项为角速度的差.
 
 轴向位置约束：以轴 $n$ 为参考，刚体不能在切向 $t_1$ 和 $t_2$ 上发生相对位移： $t_i \cdot (v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)=0$ ， $J_{ab}=\left[\begin{matrix}-t_i \\
 -r_a \times t_i \\t_i \\r_b \times t_i\end{matrix}\right]^T$，$u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]$ ，约束公式为 $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u + b$ ，误差修正项为切向$t_i$上偏离的距离。
