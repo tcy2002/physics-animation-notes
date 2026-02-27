@@ -41,9 +41,17 @@
 ### 动力学过程
 
 不同的刚体物理教程对动力学过程有不同的表现形式，最简单直接的为：
-  $$M\ddot x=f$$
+
+  $$
+  M\ddot x=f
+  $$
+
 即牛顿第二定律，对于刚体系统而言，这里的 $f$ 和 $M$ 分别为广义力和广义质量矩阵。某些地方还会考虑非惯性系的情况，比如旋转的球体表面、旋转的机械臂抓取物体的过程，会引入一个额外项 $C(x,\dot x)$ 来表示科里奥利力和向心力：
-  $$M\ddot x+C(x,\dot x)=f$$
+
+  $$
+  M\ddot x+C(x,\dot x)=f
+  $$
+
 对于只有保守力场（比如重力场）的惯性系而言可以不用考虑。
 
 前面的积分方法是从运动学视角来看，而动力学过程则是动力学视角，二者需要综合来看，动力学过程中的力 $f$ 为积分中的二阶项（加速度）$\ddot x = a(t)$ 提供了来源。
@@ -85,9 +93,17 @@
 **1. 约束公式推导**
 
 如前所属，考虑对速度进行约束，约束条件为两个刚体在相互接触的法向上不能发生相互侵入，即法向上的相对速度要在分离方向上大于等于0：
-  $$n\cdot(v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)\ge 0$$
+
+  $$
+  n\cdot(v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)\ge 0
+  $$
+
 令 $J_{ab}=\left[\begin{matrix}-n \\-r_a\times n \\n \\r_b\times n\end{matrix}\right]^T$，$u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]$ ，（广义速度），则上面的式子可以写为： $J_{ab} u\ge 0$ ，这里对LCP问题的处理方式是，当碰撞检测的结果里出现了这对刚体，说明这对刚体有相互碰撞， $J_{ab} u < 0$ ，通过正的 $\Delta u$ （指$\Delta u \cdot n>0$）将其约束到
-  $$J_{ab}(u+\Delta u)= 0 \tag{1}$$
+  
+  $$
+  J_{ab}(u+\Delta u)= 0 \tag{1}
+  $$
+
 的分离状态即可；如果碰撞检测后没有这对刚体，说明没有发生碰撞， $J_{ab} u \ge 0$，那么$\Delta u$ 就为0.
 
 这里的 $J_{ab}$ 正是描述整个刚体约束系统的雅可比矩阵的关于a和b碰撞的这一行（该行的其他维度都补充为0）。雅可比矩阵是从位置约束本身出发，再次说明速度作为位置的一阶导，用于求解约束是合理的。
@@ -95,11 +111,19 @@
 **2. 约束求解过程**
 
 由于梯度方向变化率最大，可以将 $\Delta u$ 的方向固定在梯度方向上，这里的梯度方向就是 $J_{ab}$ 所描述的方向。另外，根据牛顿第一定律，相互作用的刚体产生的相互作用力相同，因此令 $F_{ab}=J_{ab}^T\lambda$ ，那么两个刚体的速度变化量就为
-  $$\Delta u = \Delta tM^{-1}F_{ab} = \Delta t M^{-1}J_{ab}^T\lambda$$
+  
+  $$
+  \Delta u = \Delta tM^{-1}F_{ab} = \Delta t M^{-1}J_{ab}^T\lambda
+  $$
+
 其中$M$是这两个刚体的广义质量矩阵： $M=\left[\begin{matrix}\hat I_a & 0 \\0 & \hat I_b\end{matrix}\right]=\left[\begin{matrix}m_a I_3 & 0 & 0 & 0 \\0 & I_a & 0 & 0 \\0 & 0 & m_b I_3 & 0 \\0 & 0 & 0 & I_b\end{matrix}\right]$ ， $I_3$ 是三阶单位矩阵， $I_a$ 和 $I_b$ 分别是刚体a和b在世界坐标系下的惯性张量矩阵。
 
 把 $\Delta u$ 代入到式子 $(1)$ 中可以得到： $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u$ ，这里 $\Delta t$ 被吸收进 $\lambda$ 里了，由于直接求解会有jitter（表现为刚体上下抖动，上一帧有碰撞下一帧没碰撞，反复横跳），所以在右侧加上一个bias项：
-  $$J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b$$
+  
+  $$
+  J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b
+  $$
+
 这个式子就是经典的基于冲量（速度）的碰撞约束求解公式。实际计算时bias项是一个与误差修正有关的项，后面会提到。求得 $\lambda=\frac{-J_{ab}u+b}{J_{ab} M^{-1}J_{ab}^T}$ 之后，根据上面求出 $J_{ab}^T\lambda$ 即可得到约束冲量。由于 $M^{-1}$ 是一个不变的质量属性矩阵，所以可以事先计算得到，不需要每次计算时求逆。
 
 **3. 恢复系数与误差修正**
@@ -127,12 +151,26 @@ PhysX等引擎采用的是半隐式欧拉，根据上面求出的 $\Delta u$ 更
 - 与基于力的约束的关系
 
   在[Constraint.md](./Constraint.md)中介绍了基于力的约束模型，对比一下两种方法的约束公式：
-  $$JWJ^T\lambda=-JWQ-\dot J\dot q \tag a$$
-  $$J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b \tag b$$
+  
+  $$
+  JWJ^T\lambda=-JWQ-\dot J\dot q \tag a
+  $$
+
+  $$
+  J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u+b \tag b
+  $$
+
   前者从单个物体的位置的视角出发，求解满足当前约束条件的约束力，然后通过积分方法来更新位置和速度（这里需要考虑欧拉方程的进动项了）；后者从两个物体的相对速度视角出发，求解满足当前约束所需的校正冲量。
   实际上，令 $q=\left[\begin{matrix}P_a \\r_a \\P_b \\r_b\end{matrix}\right]$ ，$J_{ab}$不变，则位置约束为：
-  $$\dot C(q)=\frac{\partial C}{\partial q}\cdot \dot q = J_{ab}\dot q=0 \tag c$$
-  $$\ddot C(q)=\frac{\partial \dot C}{\partial q}\cdot \dot q + \frac{\partial C}{\partial q}\cdot \ddot q=\dot J_{ab}\dot q + J_{ab}\ddot q = 0 \tag d$$
+
+  $$
+  \dot C(q)=\frac{\partial C}{\partial q}\cdot \dot q = J_{ab}\dot q=0 \tag c
+  $$
+
+  $$
+  \ddot C(q)=\frac{\partial \dot C}{\partial q}\cdot \dot q + \frac{\partial C}{\partial q}\cdot \ddot q=\dot J_{ab}\dot q + J_{ab}\ddot q = 0 \tag d
+  $$
+
   式(d)中的 $\frac{\partial \dot C}{\partial q}\cdot \dot q$ 在前面的推导过程中被忽略了。另外，式(b)中 $J_{ab}u$ 是需要校正的相对速度，式(a)中 $JWQ$ 是外力作用下约束方向上的速度变化量，在形式上是类似的。
   
 
@@ -213,7 +251,11 @@ Ragdoll是物理角色动画的一种，用于实时地、符合物理规律地�
 ### IPC, Primal-Dual
 
 1. IPC：Incremental Potential Contact，增量势能接触模型（能量变分原理）：
-  $$x^{t+1}=\text{argmin}_x E_d(x,x^t,v^t)+B(x,\hat d)+D(x,\hat d)$$
+
+  $$
+  x^{t+1}=\text{argmin}_x E_d(x,x^t,v^t)+B(x,\hat d)+D(x,\hat d)
+  $$
+
 - 增量势能 $E_d$ 保证动力学合理性：让运动符合惯性、动量等物理规律
     - 增量势能最小化本质是牛顿-欧拉动力学方程的数值离散形式（能量变分原理），“力与运动的平衡”等价于“能量极小化”
 - 障碍势能 $B$ 保证几何约束：避免物体穿透，原理与内点法相似
@@ -224,7 +266,11 @@ IPC的迭代过程：
 - ③收敛判断：若更新步长小于阈值，重新计算的接触信息中接触点距离均 $\ge 0$ ，则终止迭代，否则回到①
 
 2. Primal-Dual，原始对偶内点法
-  $$min _{v} max _{r} \frac{1}{2}(v-\overline{v})^{\top} M(v-\overline{v}) +\overline{U}(v) -v^{\top} H^{\top} r+\kappa \sum_{i} log \left(-b_{i}(r)\right)$$
+
+  $$
+  min _{v} max _{r} \frac{1}{2}(v-\overline{v})^{\top} M(v-\overline{v}) +\overline{U}(v) -v^{\top} H^{\top} r+\kappa \sum_{i} log \left(-b_{i}(r)\right)
+  $$
+
 - 约束松弛：将法向、摩擦约束用障碍函数转化为无约束优化问题
 - KKT系统：对松弛后的目标函数求导，得到一阶最优条件，形成包括原始变量（刚体位置）和对偶变量（拉格朗日乘子$\lambda$）的KKT系统
 - 用牛顿迭代求解KKT系统，逐步减小障碍参数 $\kappa$ 直到满足收敛条件。
@@ -233,7 +279,11 @@ IPC的迭代过程：
 ### Siconos
 与IPC和Primal-Dual将刚体的非平滑约束转化为平滑约束的思路不同，Siconos求解器采用的是非平滑牛顿求解器，直接将刚体接触和摩擦的动力学方程转化为混合互补问题（MCP，LCP的变种），这些约束本身存在导数跳变，无法用针对平滑方程的牛顿求解器来优化，但可通过以下两种方法进行转化：
 - 互补函数，比如法向约束可转化为：
-  $$\Phi(r_N,u_N)=r_Nu_N+\epsilon ln(1+r_N^2+u_N^2)=0$$
+
+  $$
+  \Phi(r_N,u_N)=r_Nu_N+\epsilon ln(1+r_N^2+u_N^2)=0
+  $$
+  
   其中 $\epsilon$ 是正则化参数，使函数在原点附近平滑化
 - 克拉克次梯度：对于非平滑函数，计算其导数跳变点的克拉克次梯度（所有可能的导数的集合），构建次梯度矩阵，将牛顿迭代的搜索方向定义为次梯度的解
 与IPC通过接触势能、Primal-Dual通过障碍函数对约束进行平滑化的思路不同，以上两种方法都是在数值层面解决非平滑因素。

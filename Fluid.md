@@ -1,11 +1,15 @@
 # 流体仿真
+
 参考：Robert Bridson Fluid Simulation for Computer Graphics
 
 ## Navier-Stokes方程
+
 流体粒子同样满足牛顿第二定律：
+
 $$
 m\frac{Du}{Dt}=F
 $$
+
 这里的微分算子用大写$D$表示，表示物质导数（material derivative），描述属性随流体场的变化规律。
 
 考虑流体粒子所受的力，除了重力 $mg$ 外，还有附近粒子的相互作用。相互作用包括：由于压强差导致的推力、由于黏滞力导致的摩擦力（不太正确但直观的描述）。
@@ -15,16 +19,21 @@ $$
 黏滞力导致的摩擦力，可以用速度的拉普拉斯算子来表示： $V\eta \nabla^2u$ ， $\eta$ 是黏滞系数，黏滞力可以让流体粒子倾向于和附近的粒子按照平均速度运动。
 
 综合以上几个力：
+
 $$
 m\frac{Du}{Dt}=mg-V\nabla p+V\eta\nabla^2u
 $$
+
 除以体积 $V$ 得到：
+
 $$
 \frac{Du}{Dt}=g-\frac{1}{\rho}\nabla p+\frac{\eta}{\rho}\nabla^2u
 $$
+
 这就是navier-stokes方程的动量部分。
 
 ## 两种视角
+
 一般有两种方法来表示流体：网格法（欧拉视角）和粒子法（拉格朗日视角），前者将流体的物理属性绑定在空间位置相对固定的网格内，优点是邻域关系明确，空间位置相对固定；后者将流体的物理属性放在一个个运动的有体积粒子上，优点是节约空间，可模拟范围较大。
 
 ## 网格法
@@ -34,13 +43,16 @@ $$
 
 ### 不可压缩性：incompressibility
 流体的不可压缩性表现在：与气体相比，流体发生体积改变的程度很小，在模拟中可以忽略不计。这个属性可以用散度算子表示，即对于任意一点来说，该处物理量聚集或发散的程度为0：
+
 $$
 \nabla \cdot u=0
 $$
+
 这就是navier-stokes方程的体积约束部分，或称为divergence-free。
 
 ### 程序实现
 整理前面的内容，在不考虑黏滞性的情况下，navier-stokes方程的形式为：
+
 $$
 \begin{aligned}
 \frac{Du}{Dt}&=g-\frac{1}{\rho}\nabla p \\ 
@@ -50,19 +62,25 @@ $$
 $$
 
 接下来有一个小trick，使用分步（splitting）方法来更新速度变化。若 $q$ 关于 $t$ 的导数为：
+
 $$
 \frac{dq}{dt}=f(q)+g(q)
 $$
+
 则按照以下方式更新 $q$ ：
+
 $$
 \tilde q=q^{(n)}+\Delta tf(q^{(n)}) \\ q^{(n+1)}=\tilde q+\Delta t g(\tilde q)
 $$
+
 简单展开推导一下就可以发现，这种分步更新方式并不破坏欧拉方法的规则，仍然为 $O(\Delta t^2)$ 的截断误差。
 
 按照上面的分步方法来更新 $u$ ：观察方程组(1)，可以拆解为3个部分：
+
 $$
 \frac{\partial u}{\partial t}=f_1+f_2+f_3
 $$
+
 - $f_1$ ：advection： $u_A=\text{advect}(u^{(n)},\Delta t,u^{(n)})$， $\text{advect}(u,\Delta t,\cdot)$ 表示前面提到的advection约束；
 - $f_2$ ：外力（以重力为例）： $u_B=u_A+\Delta tg$ ；
 - $f_3$ ：压强/不可压缩性： $u^{(n+1)}=u_B-\frac{\Delta t}{\rho}\nabla p$ ， $\nabla p$ 是满足不可压缩约束（ $\nabla \cdot u=0$ ）条件的压强梯度。
@@ -71,14 +89,16 @@ $$
 ![fluid_grid](./blobs/fluid_grid.png)
 
 ### $f_1$：advection
-
 这一步需要用
+
 $$
 x'=x_i-\bar u\Delta t \tag 2
 $$
+
 处的速度 $u(x')$ 来校正 $x_i$ 处的速度。位置 $x'$ 不会完美落在网格点上，但可以找到该位置所在的正方形格子，然后用四个格点的速度来求插值。
 
 对于式(2)中的速度 $\bar u$ ，可以直接采用位置 $x_i$ 处的速度 $u(x_i)$ 来估计（显式欧拉），也可用中点或RK等方法来提高精度，比如中点法：
+
 $$
 \begin{aligned}
 x_{mid}&=x_i-\frac{1}{2}\Delta t u(x_i) \\
@@ -91,6 +111,7 @@ $$
 
 ### $f_3$：压强/不可压缩性
 将不可压缩约束展开：
+
 $$
 \begin{aligned}
 \nabla \cdot u^{(n+1)} &=\frac{\partial u^{(n+1)}}{\partial x}+\frac{\partial u^{(n+1)}}{\partial y} \\
@@ -99,11 +120,15 @@ $$
 &=\frac{1}{\Delta x}(u^{(n+1)}_{i+\frac{1}{2},j}-u^{(n+1)}_{i-\frac{1}{2},j}+u^{(n+1)}_{i,j+\frac{1}{2}}-u^{(n+1)}_{i,j-\frac{1}{2}})
 \end{aligned}
 $$
+
 将下面的迭代公式代入上式：
+
 $$
 u^{(n+1)}=u^{(n)}-\frac{\Delta t}{\rho}\nabla p^{(n+1)} \tag 3
 $$
+
 其中 $\nabla p^{(n+1)}=\frac{p^{(n+1)}_{i+1,j}-p^{(n+1)}_{i,j}}{\Delta x}$ （以 $u^{(n+1)}_{i+\frac{1}{2},j}$ 为例），得到：
+
 $$
 \begin{aligned}
 \nabla \cdot u^{(n+1)}&=\frac{1}{\Delta x}[&(u^{(n)}_{i+\frac{1}{2},j}-\frac{\Delta t}{\rho}\frac{p^{(n+1)}_{i+1,j}-p^{(n+1)}_{i,j}}{\Delta x}) \\
@@ -113,18 +138,24 @@ $$
 &=0
 \end{aligned}
 $$
+
 MAC网格将速度放在交界边上的方法恰巧可以使得压强的梯度可以获得二阶精度。化简得到：
+
 $$
 4p^{(n+1)}_{i,j}-p^{(n+1)}_{i+1,j}-p^{(n+1)}_{i,j+1}-p^{(n+1)}_{i-1,j}-p^{(n+1)}_{i,j-1}=-\frac{\rho \Delta x}{\Delta t}(u^{(n)}_{i+\frac{1}{2},j}-u^{(n)}_{i-\frac{1}{2},j}+u^{(n)}_{i,j+\frac{1}{2}}-u^{(n)}_{i,j-\frac{1}{2}})
 $$
+
 与布料隐式欧拉中使用稀疏矩阵直接求解$Ax=b$不同，这里采用Gauss-Seidel迭代来求解（参考[MathUtils.md](./MathUtils.md)），迭代公式为：
+
 $$
 \begin{aligned}
 p_{i,j}&=\frac{1}{4}(p_{i+1,j}+p_{i,j+1}+p_{i-1,j}+p_{i,j-1}-\frac{\rho \Delta x}{\Delta t}(u_{i+\frac{1}{2},j}-u_{i-\frac{1}{2},j}+u_{i,j+\frac{1}{2}}-u_{i,j-\frac{1}{2}})) \\
 &=\frac{1}{4}(p_{i+1,j}+p_{i,j+1}+p_{i-1,j}+p_{i,j-1}-\frac{\rho \Delta x^2}{\Delta t}(\nabla \cdot u))
 \end{aligned}
 $$
+
 Gauss-Seidel迭代的停止条件为：迭代过程中的均方误差小于阈值，均方误差的计算方式为：
+
 $$
 L=\frac{1}{N_{grid}}\sqrt{\sum_{i,j}(p_{i,j}-\frac{1}{4}(p_{i+1,j}+p_{i,j+1}+p_{i-1,j}+p_{i,j-1}-\frac{\rho \Delta x^2}{\Delta t}(\nabla \cdot u)))^2}
 $$
@@ -144,4 +175,3 @@ $$
 ## 粒子法
 
 TODO
-

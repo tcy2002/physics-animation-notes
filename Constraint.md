@@ -1,23 +1,31 @@
 # 基于力的约束
+
 以半径为1的圆环上运动的小球为例，小球的位置为$x$，其满足的约束方程为：
+
 $$
 C(x)=\frac{1}{2}x \cdot x-\frac{1}{2}=0
 $$
+
 几何含义为小球到环心的距离始终为1( $|x|=1$ )，乘 $\frac{1}{2}$ 可以消掉一二阶导的系数。一二阶导分别为：
+
 $$
 \dot C(x)=x\cdot \dot x=0
 $$
+
 $$
 \ddot C(x)=x\cdot \ddot x+\dot x \cdot \dot x=0
 $$
+
 要使小球满足约束，且不往破坏约束条件的情况下演化，需要通过一定方式使得上述三个方程全部成立。
 
 ## 约束模型
+
 对于一般约束 $C$ ， $\frac{\partial C}{\partial x}$ 表示约束 $C$ 的梯度，那么：
 
 $$
 \dot C(x)=\frac{\partial C}{\partial x}\cdot \dot x=0\
 $$
+
 $$
 \ddot C(x)=\frac{\partial \dot C}{\partial x}\cdot \dot x+\frac{\partial C}{\partial x}\cdot \ddot x=0
 $$
@@ -34,6 +42,7 @@ $$
 $$
 \hat f=\lambda\frac{\partial C}{\partial x}
 $$
+
 $$
 \frac{\partial C}{\partial x}\cdot (\frac{1}{m} \frac{\partial C}{\partial x} \lambda)=-\frac{\partial C}{\partial x}\cdot \frac{f}{m}-\frac{\partial \dot C}{\partial x}\cdot \dot x \tag 1
 $$
@@ -47,11 +56,13 @@ $$
 若不是粒子而是刚体，除位置外还需考虑旋转朝向，则多3个旋转自由度， $J\in R^{m\times 6n}$ ， $W\in R^{6n\times 6n}$ ， $q=[x_1^T,\alpha_1^T,x_2^T,\alpha_2^T...,x_n^T,\alpha_n^T]$ ， $Q=[f_1^T,t_1^T,f_2^T,t_2^T...,f_n^T,t_n^T]$ ， $\dot \alpha=\omega$ ， $t$ 为外力矩， $W$ 相应位置填充惯性张量矩阵的逆。
 
 式(1)扩展为：
+
 $$
 JWJ^T\lambda=-JWQ-\dot J\dot q
 $$
 
 对于经典距离约束 $C(x_1,x_2)=\frac{1}{2}(x_1-x_2)\cdot(x_1-x_2)-\frac{1}{2}d^2=0$ ，雅可比矩阵为
+
 $$
 \begin{aligned}
 J&=[(\frac{\partial C}{\partial x_1})^T,(\frac{\partial C}{\partial x_2})^T] \\
@@ -67,6 +78,7 @@ J&=[(\frac{\partial C}{\partial x_1})^T,(\frac{\partial C}{\partial x_2})^T] \\
 $$
 
 对于一般的不考虑外力作用的场景而言，有：
+
 $$
 JWJ^T\lambda=-\dot J\dot q_1-k_sC-k_d\dot C
 $$
