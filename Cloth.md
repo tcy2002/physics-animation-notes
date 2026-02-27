@@ -65,8 +65,11 @@ $$
 接下来，除 $\Delta v_a$ 和 $\Delta v_b$ 外都是已知量，将含 $\Delta v_a$ 和 $\Delta v_b$ 的项分离开得到：
 
 $$
+\begin{aligned}
 (m-\Delta t\frac{\partial f}{\partial v_a}-{\Delta t}^2\frac{\partial f}{\partial x_a})\Delta v_a-(\Delta t\frac{\partial f}{\partial v_b}+{\Delta t}^2\frac{\partial f}{\partial x_b})\Delta v_b \\
-=\Delta t(f_n+\Delta t(\frac{\partial f}{\partial x_a}v_a+\frac{\partial f}{\partial x_b}v_b)) \tag 1
+=\Delta t(f_n+\Delta t(\frac{\partial f}{\partial x_a}v_a+\frac{\partial f}{\partial x_b}v_b)) 
+\end{aligned}
+\tag 1
 $$
 
 整理矩阵方程：
