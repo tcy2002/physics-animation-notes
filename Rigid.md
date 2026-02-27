@@ -189,7 +189,7 @@ M=
 $$
 
 $$
-=
+M=
 \left[\begin{matrix}
 m_a I_3 & 0 & 0 & 0 \\
 0 & I_a & 0 & 0 \\
