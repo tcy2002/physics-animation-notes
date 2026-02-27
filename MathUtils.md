@@ -24,14 +24,14 @@ $$
 
   类似的还有海森（Hessian）矩阵：约束的二阶导矩阵，但与雅可比矩阵不同的是，每个约束都有一个自己的海森矩阵：
 
-  $$
-  H_i=\left[\begin{matrix}
-  \frac{\partial^2 f_i}{{\partial x_1}^2} & \frac{\partial^2 f_i}{\partial x_1\partial x_2} & ... & \frac{\partial^2 f_i}{\partial x_1\partial x_n} \\
-  \frac{\partial^2 f_i}{\partial x_1\partial x_2} & \frac{\partial^2 f_i}{{\partial x_2}^2} & ... & \frac{\partial^2 f_i}{\partial x_2\partial x_n} \\
-  \vdots & \vdots & \ddots & \vdots \\
-  \frac{\partial^2 f_i}{\partial x_1\partial x_n} & \frac{\partial^2 f_i}{\partial x_2\partial x_n} & ... & \frac{\partial^2 f_i}{{\partial x_n}^2}
-  \end{matrix}\right]
-  $$
+$$
+H_i=\left[\begin{matrix}
+\frac{\partial^2 f_i}{{\partial x_1}^2} & \frac{\partial^2 f_i}{\partial x_1\partial x_2} & ... & \frac{\partial^2 f_i}{\partial x_1\partial x_n} \\
+\frac{\partial^2 f_i}{\partial x_1\partial x_2} & \frac{\partial^2 f_i}{{\partial x_2}^2} & ... & \frac{\partial^2 f_i}{\partial x_2\partial x_n} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial^2 f_i}{\partial x_1\partial x_n} & \frac{\partial^2 f_i}{\partial x_2\partial x_n} & ... & \frac{\partial^2 f_i}{{\partial x_n}^2}
+\end{matrix}\right]
+$$
 
   雅可比矩阵描述了各个位置的约束梯度，海森矩阵则描述的是各个位置的约束曲率。
 
@@ -45,47 +45,47 @@ $$
 迭代方法：
 - 雅可比迭代：对于矩阵方程 $Ax=b$ ，其中 $A$ 非奇异且 $a_{ii}\neq 0$ ，将A分解为： $A=D+L+U$ ，其中 $D$ 为包含元素 $a_{ii}$ 的对角矩阵， $L$ 为包含元素 $a_{ij},i<j$ 的严格下三角矩阵， $U$ 为包含元素 $a_{ij},i>j$ 的严格上三角矩阵，迭代过程为：
 
-  $$
-  x^{(k+1)}=-D^{-1}(L+U)x^{(k)}+D^{-1}b
-  $$
+$$
+x^{(k+1)}=-D^{-1}(L+U)x^{(k)}+D^{-1}b
+$$
 
   直观理解：将以下方程组
 
-  $$
-  \begin{cases}
-  8x_1-3x_2+2x_3=20 \\
-  4x_1+11x_2-x_3=33 \\
-  6x_1+3x_2+13x_3=36
-  \end{cases}
-  $$
+$$
+\begin{cases}
+8x_1-3x_2+2x_3=20 \\
+4x_1+11x_2-x_3=33 \\
+6x_1+3x_2+13x_3=36
+\end{cases}
+$$
 
   转化为以下方程组：
 
-  $$
-  \begin{cases}
-  x_1=(20+3x_2-2x_3)/8 \\
-  x_2=(33-4x_1+x_3)/11 \\
-  x_3=(36-6x_1-3x_2)/12
-  \end{cases}
-  $$
+$$
+\begin{cases}
+x_1=(20+3x_2-2x_3)/8 \\
+x_2=(33-4x_1+x_3)/11 \\
+x_3=(36-6x_1-3x_2)/12
+\end{cases}
+$$
 
   使用后一个方程组进行迭代，精确解为 $x=[3,2,1]^T$ ，选择 $x^{(0)}=[0,0,0]^T$ ，迭代5次有 $x=[2.999843,2.000072,1.000061]^T$ 
 - Gauss-Seidel迭代：雅可比迭代的改进，在计算 $x_i^{(k+1)}$ 时，使用已经更新的 $x_j^{(k+1)},j<i$ ，而不是直接使用旧的 $x^{(k)}$ ，即：
 
-  $$
-  \begin{cases}
-  x_1^{(k+1)}=(20+3x_2^{(k)}-2x_3^{(k)})/8 \\
-  x_2^{(k+1)}=(33-4x_1^{(k+1)}+x_3^{(k)})/11 \\
-  x_3^{(k+1)}=(36-6x_1^{(k+1)}-3x_2^{(k+1)})/12
-  \end{cases} 
-  \tag 3
-  $$
+$$
+\begin{cases}
+x_1^{(k+1)}=(20+3x_2^{(k)}-2x_3^{(k)})/8 \\
+x_2^{(k+1)}=(33-4x_1^{(k+1)}+x_3^{(k)})/11 \\
+x_3^{(k+1)}=(36-6x_1^{(k+1)}-3x_2^{(k+1)})/12
+\end{cases} 
+\tag 3
+$$
 
   即，迭代方程修改为：
 
-  $$
-  x^{(k+1)}=(D-L)^{-1}Ux^{(k)}+(D-L)^{-1}b
-  $$
+$$
+x^{(k+1)}=(D-L)^{-1}Ux^{(k)}+(D-L)^{-1}b
+$$
 
   高斯-赛德尔迭代收敛更快。
 - Projected Gauss-Seidel迭代（PGS）：在Gauss-Seidel迭代的基础上，对每次迭代后的$x$进行约束，比如求出摩擦约束之后，需要根据库伦定律约束在摩擦系数以内。
