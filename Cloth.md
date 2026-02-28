@@ -214,3 +214,15 @@ $$
 $$
 \Delta_{p_i}C=\sum_{j:t_1^j}(p_{t_2^j}\times p_{t_3^j})+\sum_{j:t_2^j}(p_{t_3^j}\times p_{t_1^j})+\sum_{j:t_3^j}(p_{t_1^j}\times p_{t_2^j})
 $$
+
+### XPBD的改进
+
+PBD解决了基于力的约束的误差和不稳定性问题，直接对位置进行操作，但是物体的硬度取决于迭代次数和时间步长。
+
+XPBD引入柔性约束（弹性势能），PBD每次迭代时都试图彻底消除误差，将位置拉回到满足约束的地方，而XPBD允许一定的误差存在，根据材料的柔韧性调整，等价于隐式积分。
+
+本质上是变分能量最小化的优化求解过程，更新公式：
+- PBD的更新： $\Delta x = \frac{-C(x)}{\nabla C M^{-1} \nabla C^T}$
+- XPBD的更新： $\Delta \lambda = \frac{-C(\mathbf{x}) - \tilde{\alpha} \lambda_i}{\nabla C \mathbf{M}^{-1} \nabla C^T + \tilde{\alpha}}$ , $\lambda_{i+1}=\lambda_i + \Delta \lambda$ , $x_{i+1} = x_i + M^{-1} \nabla C^T \Delta \lambda$
+
+XPBD的 $\lambda$ 记录了迭代过程中已施加的约束力，如果物体还没达到预定的刚度，会持续累积，直到满足基于 $\alpha$ 的物理平衡，更直观的解释： $\lambda$ 的持续累积实际上模拟了弹力的产生过程，当质点恢复原状的冲动（约束 $C$）大于材料本身的抵抗力（ $\alpha \lambda$ ）时，顶点才会继续移动。
