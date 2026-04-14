@@ -393,12 +393,21 @@ t_i \cdot (v_b+\omega_b\times r_b-v_a-\omega_a\times r_a)=0
 $$ 
 
 $$
-J_{ab}=\left[\begin{matrix}-t_i \\
--r_a \times t_i \\t_i \\r_b \times t_i\end{matrix}\right]^T
+J_{ab}=\left[
+\begin{matrix}-t_i \\
+-r_a \times t_i \\ 
+t_i \\ 
+r_b \times t_i 
+\end{matrix}\right]^T
 $$
 
 $$
-u=\left[\begin{matrix}v_a \\\omega_a \\v_b \\\omega_b\end{matrix}\right]
+u=\left[\begin{matrix}
+v_a \\ 
+\omega_a \\ 
+v_b \\ 
+\omega_b
+\end{matrix}\right]
 $$
 
 约束公式为 $J_{ab} M^{-1}J_{ab}^T\lambda=-J_{ab}u + b$ ，误差修正项为切向 $t_i$ 上偏离的距离。
