@@ -134,7 +134,7 @@ u^{(n+1)}=u^{(n)}-\frac{\Delta t}{\rho}\nabla p^{(n+1)}
 \tag 4
 $$
 
-其中 $\nabla p^{(n+1)}=\frac{p^{(n+1)}_{i+1,j}-p^{(n+1)}_{i,j}}{\Delta x}$ （以 $u^{(n+1)}_{i+\frac{1}{2},j}$ 为例），得到：
+其中 $\nabla p^{(n+1)}=\frac{p_{i+1,j}^{(n+1)}-p_{i,j}^{(n+1)}}{\Delta x}$ （以 $u_{i+\frac{1}{2},j}^{(n+1)}$ 为例），得到：
 
 $$
 \begin{aligned}
